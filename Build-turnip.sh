@@ -101,6 +101,7 @@ rm -f VERSION
 rm -f ./src/freedreno/common/freedreno_devices.py
 wget https://raw.githubusercontent.com/lfdevs/mesa-for-android-container/refs/heads/adreno-main/src/freedreno/common/freedreno_devices.py
 mv freedreno_devices.py src/freedreno/common
+wget https://raw.githubusercontent.com/JustCallMeJade/Turnip_drivers_adreno/refs/heads/main/Extras/patch-fixer.py
 cat <<EOF > VERSION
 $VERSION
 EOF
@@ -116,20 +117,19 @@ for entry in "${PATCHES[@]}"; do
     case "$type" in
         git_apply)
             echo "Applying $filename (git apply)..."
-            git apply "$filename"
+            patch-fixer.py "$filename"
             ;;
         git_am)
             echo "Applying $filename (git am)..."
-            git am --whitespace=fix "$filename"
+            patch-fixer.py "$filename"
             ;;
         patch_p1)
             echo "Applying $filename (patch -p1)..."
-            patch -p1 -i "$filename"
+            patch-fixer.py "$filename"
             ;;
         py_script)
             echo "Applying $filename (python script)..."
-            chmod +x "$filename"
-            ./"$filename"
+            python3 "$filename"
             ;;
     esac
 done
