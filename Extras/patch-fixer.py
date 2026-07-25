@@ -1,43 +1,4 @@
 #!/usr/bin/env python3
-"""patch-fixer.py — applies a possibly-outdated .patch/.diff against the
-current state of a source tree, the way a person manually re-basing an old
-patch would: for each hunk, first try an exact match; if the file has
-drifted (lines added/removed/reordered nearby), fall back to locating the
-hunk by its most distinctive content and fuzzy-aligning the surrounding
-context, instead of just failing the way `git apply`/`patch` do on drift.
-
-This automates exactly what I (Claude) was doing by hand throughout a long
-patch-fixing session: exact-match first, and when that fails, look at what
-actually changed nearby in the real file and adjust.
-
-Usage:
-    python3 patch-fixer.py your-patch.patch [target_root]
-
-target_root defaults to the current directory. Files named in the patch
-are located under target_root by filename (walking subdirectories), same
-approach as the other patch scripts in this series — not by assuming the
-patch's own path prefix (a/, b/) matches the tree layout.
-
-Safety principles (same as every hand-written script in this series):
-  - A hunk is only applied when its anchor is found with a confident,
-    UNIQUE match. Ambiguous matches (multiple equally-good candidate
-    locations) are skipped and reported, never guessed at.
-  - Nothing is written until every hunk for a file has been resolved;
-    partial/uncertain hunks don't corrupt the file.
-  - Every hunk's outcome (exact / fuzzy / skipped) is printed, so a fuzzy
-    match can be spot-checked rather than trusted blindly.
-  - New-file hunks (patch adds a file that doesn't exist yet) are created
-    directly. Hunks against files that can't be found at all are reported,
-    not guessed at.
-
-Limitations (also true of manual patch-fixing, just worth stating):
-  - This does not understand code semantics. A fuzzy match finds the most
-    similar nearby text, not necessarily the "correct" one if the same
-    pattern legitimately appears twice with different meaning nearby.
-  - Large-scale rewrites (a file that's fundamentally reorganized, not
-    just drifted a bit) will still fail to fuzzy-match, the same way a
-    human re-basing a patch by hand would give up and re-derive it.
-"""
 
 import difflib
 import os
