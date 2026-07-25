@@ -42,7 +42,7 @@ PATCHES=(
     "$PATCH_16::patch_p1"
 )
 
-deps="git pkg-config cmake build-essential wget patchelf zip"
+deps="git pkg-config cmake build-essential wget2 patchelf zip"
 VERSION="26.3.0-V3.0"
 
 if [[ -z "${API_VER:-}" ]]; then
@@ -78,7 +78,7 @@ sudo apt-get update -y > /dev/null 2>&1
 sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1
 sudo apt-get build-dep libarchive -y -qq > /dev/null 2>&1
 sudo apt install -y $deps > /dev/null 2>&1
-sudo apt install git pkg-config cmake patchelf build-essential wget zip # fallback when deps installation failed
+sudo apt install git pkg-config cmake patchelf build-essential wget2 zip # fallback when deps installation failed
 
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/turnip"
@@ -88,7 +88,7 @@ rm -rf "$workdir/mesa"
 rm -rf "$workdir/android-ndk-r29-linux-aarch64.tar.gz"
 
 cd "$workdir"
-wget -q -nv https://github.com/SnowNF/ndk-aarch64-linux/releases/download/0.0.2/android-ndk-r29-linux-aarch64.tar.gz
+wget2 -q -nv https://github.com/SnowNF/ndk-aarch64-linux/releases/download/0.0.2/android-ndk-r29-linux-aarch64.tar.gz
 tar -xzf android-ndk-r29-linux-aarch64.tar.gz
 
 git clone "$mesasrc" --depth=1
@@ -98,7 +98,7 @@ git config user.name "Turnip-Builder"
 git config user.email "sdddxd86@gmail.com"
 
 rm -f VERSION 
-wget https://raw.githubusercontent.com/JustCallMeJade/Turnip_drivers_adreno/refs/heads/main/Extras/patch-fixer.py
+wget2 https://raw.githubusercontent.com/JustCallMeJade/Turnip_drivers_adreno/refs/heads/main/Extras/patch-fixer.py
 cat <<EOF > VERSION
 $VERSION
 EOF
@@ -109,7 +109,7 @@ for entry in "${PATCHES[@]}"; do
     type="${entry##*::}"
     filename="$(basename "$url")"
 
-    wget "$url" -q -nv || exit 1
+    wget2 "$url" -q -nv || exit 1
 
     case "$type" in
         git_apply)
