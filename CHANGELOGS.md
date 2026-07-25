@@ -31,7 +31,6 @@
 
 - **810** : **Supported**  ✓
 - **825** : **Supported**  ✓
-- **829** : **Supported**  ✓
 - **830** : **Supported**  ✓
 - **840** : **Supported**  ✓
 
