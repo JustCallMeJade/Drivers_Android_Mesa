@@ -98,9 +98,6 @@ git config user.name "Turnip-Builder"
 git config user.email "sdddxd86@gmail.com"
 
 rm -f VERSION 
-rm -f ./src/freedreno/common/freedreno_devices.py
-wget https://raw.githubusercontent.com/lfdevs/mesa-for-android-container/refs/heads/adreno-main/src/freedreno/common/freedreno_devices.py
-mv freedreno_devices.py src/freedreno/common
 wget https://raw.githubusercontent.com/JustCallMeJade/Turnip_drivers_adreno/refs/heads/main/Extras/patch-fixer.py
 cat <<EOF > VERSION
 $VERSION
