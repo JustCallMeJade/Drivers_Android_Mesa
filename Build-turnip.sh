@@ -117,15 +117,15 @@ for entry in "${PATCHES[@]}"; do
     case "$type" in
         git_apply)
             echo "Applying $filename (git apply)..."
-            patch-fixer.py "$filename"
+            python3 patch-fixer.py "$filename"
             ;;
         git_am)
             echo "Applying $filename (git am)..."
-            patch-fixer.py "$filename"
+            python3 patch-fixer.py "$filename"
             ;;
         patch_p1)
             echo "Applying $filename (patch -p1)..."
-            patch-fixer.py "$filename"
+            python3 patch-fixer.py "$filename"
             ;;
         py_script)
             echo "Applying $filename (python script)..."
