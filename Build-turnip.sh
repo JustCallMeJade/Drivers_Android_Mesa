@@ -21,7 +21,7 @@ PATCH_12="https://raw.githubusercontent.com/WinNative-Emu/Drivers/main/patches/d
 PATCH_13="https://github.com/lfdevs/mesa-for-android-container/commit/6338905ad3e8767bf5e5b04ffbbc6c3d9ed3d8e2.patch"
 PATCH_14="https://raw.githubusercontent.com/WinNative-Emu/Drivers/main/patches/apply_a7xx_gen2_ubwc_hint.py"
 PATCH_15="https://raw.githubusercontent.com/WinNative-Emu/Drivers/main/patches/apply_balance_variant.py"
-PATCH_16="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/43136.diff"
+PATCH_16="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/43165.diff"
 
 PATCHES=(
     "$PATCH_1::git_apply"
