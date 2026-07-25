@@ -2,7 +2,61 @@
 
 import difflib
 import os
+import subprocess
 import sys
+
+
+def find_git_repo_root(path):
+    """Return the git repo root containing path, or None if not inside
+    one (or git isn't available)."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--show-toplevel"],
+            cwd=path, capture_output=True, text=True, timeout=10,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    return result.stdout.strip()
+
+
+def try_git_am(repo_root, patch_path):
+    """Attempt `git am --3way` on patch_path against repo_root. Returns
+    True if it applied cleanly (working tree now has the commit(s)).
+    On any failure, aborts the am session to leave the repo clean and
+    returns False so the caller can fall back to fuzzy matching."""
+    print(f"Git repo detected at {repo_root} — trying `git am --3way` first "
+          f"(more reliable than fuzzy matching when it works, since it can "
+          f"use git's own 3-way merge against blob history).")
+
+    status = subprocess.run(
+        ["git", "status", "--porcelain"],
+        cwd=repo_root, capture_output=True, text=True,
+    )
+    if status.stdout.strip():
+        print("  Working tree has uncommitted changes — skipping git am "
+              "(would risk mixing them into the am session) and going "
+              "straight to fuzzy matching instead.")
+        return False
+
+    result = subprocess.run(
+        ["git", "am", "--3way", os.path.abspath(patch_path)],
+        cwd=repo_root, capture_output=True, text=True,
+    )
+    if result.returncode == 0:
+        print("  git am --3way: succeeded")
+        print(result.stdout.strip())
+        return True
+
+    print("  git am --3way: failed, aborting am session and falling back "
+          "to fuzzy matching")
+    print("  ---")
+    for line in (result.stdout + result.stderr).strip().splitlines():
+        print(f"  {line}")
+    print("  ---")
+    subprocess.run(["git", "am", "--abort"], cwd=repo_root, capture_output=True)
+    return False
 
 
 # ---------------------------------------------------------------------
@@ -367,6 +421,14 @@ def main():
         sys.exit(1)
 
     print(f"Parsing: {patch_path}")
+
+    repo_root = find_git_repo_root(abs_root)
+    if repo_root:
+        if try_git_am(repo_root, patch_path):
+            print("\nDone via git am — fuzzy matching wasn't needed.")
+            return
+        print()
+
     changes = parse_patch(patch_path)
     print(f"Found {len(changes)} file change(s) across the patch")
     print(f"Searching under: {abs_root}\n")
