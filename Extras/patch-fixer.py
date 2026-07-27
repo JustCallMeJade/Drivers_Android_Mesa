@@ -75,13 +75,36 @@ class FileChange:
         self.hunks = []
         self.is_new_file = False
         self.new_file_content = None  # full content if is_new_file
+        self.is_deleted = False
+
+
+def _clean_diff_path(raw_path):
+    """Strip a trailing tab/timestamp some plain unified diffs append
+    (e.g. '--- src/foo.c\\t2024-01-01 12:00:00.000000000 +0000'), and
+    strip a git-style a/ or b/ prefix if present. Bare paths (no prefix,
+    e.g. '--- src/foo.c') are returned as-is."""
+    path = raw_path.split("\t")[0].strip()
+    if path == "/dev/null":
+        return None
+    if path.startswith("a/") or path.startswith("b/"):
+        path = path[2:]
+    return path
 
 
 def parse_patch(patch_path):
-    """Parse a unified diff (possibly multi-commit, git format-patch/mbox
-    style) into a list of FileChange objects. Robust against mbox
-    boundaries between commits (e.g. '-- \\n2.34.1\\nFrom ...' separators),
-    which naive line-prefix parsing chokes on."""
+    """Parse a unified diff into a list of FileChange objects. Handles:
+      - git's own format (diff --git a/X b/Y, optionally with
+        --- a/X / +++ b/Y, new file mode, mbox/format-patch boundaries)
+      - plain unified diffs with no `diff --git` line at all, just
+        `--- path` / `+++ path` (from `diff -u`, `svn diff`, etc.),
+        including bare paths with no a/ b/ prefix at all
+        (`--- src/foo.c` / `+++ src/foo.c`)
+      - /dev/null on either side to mean file creation or deletion,
+        even without git's explicit 'new file mode' line
+    Also robust against mbox boundaries between commits (e.g.
+    '-- \\n2.34.1\\nFrom ...' separators), which naive line-prefix
+    parsing chokes on.
+    """
     with open(patch_path, errors="replace") as f:
         lines = f.readlines()
 
@@ -90,7 +113,9 @@ def parse_patch(patch_path):
     in_hunk = False
     old_buf, new_buf = [], []
     new_file_mode = False
+    is_deleted_file = False
     new_file_lines = []
+    pending_minus_path = None  # holds --- path until the +++ pair arrives
 
     def flush_hunk():
         nonlocal old_buf, new_buf
@@ -98,18 +123,46 @@ def parse_patch(patch_path):
             cur.hunks.append(Hunk(old_buf, new_buf))
         old_buf, new_buf = [], []
 
+    def start_new_file(path):
+        nonlocal cur, in_hunk, new_file_mode, is_deleted_file, new_file_lines
+        flush_hunk()
+        in_hunk = False
+        new_file_mode = False
+        is_deleted_file = False
+        new_file_lines = []
+        cur = FileChange(path)
+        changes.append(cur)
+
     for raw in lines:
         line = raw.rstrip("\n")
 
         if raw.startswith("diff --git"):
-            flush_hunk()
-            in_hunk = False
-            new_file_mode = False
-            # "diff --git a/path b/path"
+            # "diff --git a/path b/path" -- use it to seed a path, but
+            # the --- / +++ lines that normally follow are still the
+            # authoritative source (handles renames where a/ and b/
+            # differ) and will refine `cur` a moment later.
             parts = raw.split()
             path = parts[-1][2:] if len(parts) >= 4 else None
-            cur = FileChange(path)
-            changes.append(cur)
+            start_new_file(path)
+            pending_minus_path = None
+            continue
+
+        if raw.startswith("--- "):
+            pending_minus_path = _clean_diff_path(raw[4:])
+            continue
+
+        if raw.startswith("+++ "):
+            plus_path = _clean_diff_path(raw[4:])
+            # Prefer the +++ (post-image) path; for deletions (+++ is
+            # /dev/null) fall back to the --- path instead.
+            resolved = plus_path if plus_path is not None else pending_minus_path
+            if cur is None or resolved != cur.path:
+                start_new_file(resolved)
+            if pending_minus_path is None:
+                cur.is_new_file = True
+            if plus_path is None:
+                cur.is_deleted = True
+            pending_minus_path = None
             continue
 
         if cur is None:
@@ -120,13 +173,15 @@ def parse_patch(patch_path):
             cur.is_new_file = True
             continue
 
+        if raw.startswith("deleted file mode"):
+            cur.is_deleted = True
+            continue
+
         if raw.startswith("@@"):
             flush_hunk()
             in_hunk = True
             continue
 
-        if raw.startswith("--- ") or raw.startswith("+++ "):
-            continue
         if raw.startswith("index "):
             continue
 
