@@ -7,8 +7,6 @@ import sys
 
 
 def find_git_repo_root(path):
-    """Return the git repo root containing path, or None if not inside
-    one (or git isn't available)."""
     try:
         result = subprocess.run(
             ["git", "rev-parse", "--show-toplevel"],
@@ -22,10 +20,6 @@ def find_git_repo_root(path):
 
 
 def try_git_am(repo_root, patch_path):
-    """Attempt `git am --3way` on patch_path against repo_root. Returns
-    True if it applied cleanly (working tree now has the commit(s)).
-    On any failure, aborts the am session to leave the repo clean and
-    returns False so the caller can fall back to fuzzy matching."""
     print(f"Git repo detected at {repo_root} — trying `git am --3way` first "
           f"(more reliable than fuzzy matching when it works, since it can "
           f"use git's own 3-way merge against blob history).")
@@ -59,13 +53,9 @@ def try_git_am(repo_root, patch_path):
     return False
 
 
-# ---------------------------------------------------------------------
-# Diff parsing
-# ---------------------------------------------------------------------
-
 class Hunk:
     def __init__(self, old_lines, new_lines):
-        self.old_lines = old_lines  # list of str, each WITHOUT trailing \n stripped
+        self.old_lines = old_lines
         self.new_lines = new_lines
 
 
@@ -74,15 +64,11 @@ class FileChange:
         self.path = path
         self.hunks = []
         self.is_new_file = False
-        self.new_file_content = None  # full content if is_new_file
+        self.new_file_content = None
         self.is_deleted = False
 
 
 def _clean_diff_path(raw_path):
-    """Strip a trailing tab/timestamp some plain unified diffs append
-    (e.g. '--- src/foo.c\\t2024-01-01 12:00:00.000000000 +0000'), and
-    strip a git-style a/ or b/ prefix if present. Bare paths (no prefix,
-    e.g. '--- src/foo.c') are returned as-is."""
     path = raw_path.split("\t")[0].strip()
     if path == "/dev/null":
         return None
@@ -92,19 +78,6 @@ def _clean_diff_path(raw_path):
 
 
 def parse_patch(patch_path):
-    """Parse a unified diff into a list of FileChange objects. Handles:
-      - git's own format (diff --git a/X b/Y, optionally with
-        --- a/X / +++ b/Y, new file mode, mbox/format-patch boundaries)
-      - plain unified diffs with no `diff --git` line at all, just
-        `--- path` / `+++ path` (from `diff -u`, `svn diff`, etc.),
-        including bare paths with no a/ b/ prefix at all
-        (`--- src/foo.c` / `+++ src/foo.c`)
-      - /dev/null on either side to mean file creation or deletion,
-        even without git's explicit 'new file mode' line
-    Also robust against mbox boundaries between commits (e.g.
-    '-- \\n2.34.1\\nFrom ...' separators), which naive line-prefix
-    parsing chokes on.
-    """
     with open(patch_path, errors="replace") as f:
         lines = f.readlines()
 
@@ -115,7 +88,7 @@ def parse_patch(patch_path):
     new_file_mode = False
     is_deleted_file = False
     new_file_lines = []
-    pending_minus_path = None  # holds --- path until the +++ pair arrives
+    pending_minus_path = None
 
     def flush_hunk():
         nonlocal old_buf, new_buf
@@ -137,10 +110,6 @@ def parse_patch(patch_path):
         line = raw.rstrip("\n")
 
         if raw.startswith("diff --git"):
-            # "diff --git a/path b/path" -- use it to seed a path, but
-            # the --- / +++ lines that normally follow are still the
-            # authoritative source (handles renames where a/ and b/
-            # differ) and will refine `cur` a moment later.
             parts = raw.split()
             path = parts[-1][2:] if len(parts) >= 4 else None
             start_new_file(path)
@@ -153,8 +122,6 @@ def parse_patch(patch_path):
 
         if raw.startswith("+++ "):
             plus_path = _clean_diff_path(raw[4:])
-            # Prefer the +++ (post-image) path; for deletions (+++ is
-            # /dev/null) fall back to the --- path instead.
             resolved = plus_path if plus_path is not None else pending_minus_path
             if cur is None or resolved != cur.path:
                 start_new_file(resolved)
@@ -166,7 +133,7 @@ def parse_patch(patch_path):
             continue
 
         if cur is None:
-            continue  # skip mbox headers/commit messages before first diff
+            continue
 
         if raw.startswith("new file mode"):
             new_file_mode = True
@@ -201,10 +168,6 @@ def parse_patch(patch_path):
             old_buf.append(content)
             new_buf.append(content)
         else:
-            # Not a recognized diff-body line -> hunk (and likely this
-            # commit's diff) has ended. This is what protects against
-            # mbox boundaries ("-- ", version footer, "From ...", commit
-            # metadata) being swept into a hunk.
             flush_hunk()
             in_hunk = False
 
@@ -214,18 +177,10 @@ def parse_patch(patch_path):
         if c.is_new_file:
             c.new_file_content = "\n".join(new_file_lines) + "\n" if new_file_lines else ""
 
-    # Drop changes with no path or no content (parsing artifacts)
     return [c for c in changes if c.path and (c.hunks or c.new_file_content is not None)]
 
 
-# ---------------------------------------------------------------------
-# File location
-# ---------------------------------------------------------------------
-
 def find_target_file(root, diff_path):
-    """Locate diff_path's file under root by filename, preferring a match
-    whose parent directories also line up with the diff's own path when
-    there are multiple same-named files in the tree."""
     basename = os.path.basename(diff_path)
     diff_parts = diff_path.replace("\\", "/").split("/")
 
@@ -239,8 +194,6 @@ def find_target_file(root, diff_path):
     if len(candidates) == 1:
         return candidates[0]
 
-    # Disambiguate: score each candidate by how many trailing path
-    # components match the diff's own path.
     def score(candidate):
         cparts = candidate.replace("\\", "/").split("/")
         s = 0
@@ -255,14 +208,7 @@ def find_target_file(root, diff_path):
     return candidates[0]
 
 
-# ---------------------------------------------------------------------
-# Fuzzy hunk matching
-# ---------------------------------------------------------------------
-
 def _pick_anchor_line(old_lines):
-    """Pick the most distinctive line to search for first: prefer longer,
-    non-trivial lines (skip bare braces/blank/short punctuation-only
-    lines which are common and non-specific)."""
     def is_trivial(l):
         s = l.strip()
         return len(s) < 8 or s in ("{", "}", "};", "});", "),", "(", ")")
@@ -273,10 +219,6 @@ def _pick_anchor_line(old_lines):
 
 
 def find_best_window(file_lines, old_lines, min_ratio=0.6, local_radius=40):
-    """Find the best-matching window in file_lines for old_lines.
-    Strategy: locate candidate start positions via an exact-match anchor
-    line (fast), then only run difflib similarity scoring on windows
-    near those candidates (not the whole file) for speed."""
     n = len(old_lines)
     if n == 0:
         return None
@@ -285,9 +227,6 @@ def find_best_window(file_lines, old_lines, min_ratio=0.6, local_radius=40):
     anchor_positions = [i for i, l in enumerate(file_lines) if l == anchor]
 
     if not anchor_positions:
-        # Anchor line itself doesn't exist verbatim anywhere; nothing to
-        # locally search around. Give up rather than scanning the whole
-        # file (would be slow and low-confidence anyway).
         return None
 
     anchor_rel = old_lines.index(anchor)
@@ -317,12 +256,6 @@ def find_best_window(file_lines, old_lines, min_ratio=0.6, local_radius=40):
 
 
 def build_replacement(old_lines, new_lines, window_lines):
-    """Given the hunk's intended old->new lines and the ACTUAL window
-    content found in the file (which may differ slightly from old_lines
-    due to drift), produce the correct new text: keep any of the file's
-    own lines that the hunk didn't actually touch (pure insertions the
-    file gained independently), while still applying the hunk's own
-    added/removed lines faithfully."""
     sm = difflib.SequenceMatcher(None, old_lines, window_lines, autojunk=False)
     old_to_window = {}
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
@@ -330,10 +263,6 @@ def build_replacement(old_lines, new_lines, window_lines):
             for k in range(i1, i2):
                 old_to_window[k] = True
 
-    # Simplest robust approach: apply the hunk's new_lines as-is (this is
-    # exactly what the hunk intends to produce), but preserve any window
-    # lines that fall in gaps the hunk's old_lines never claimed (i.e.
-    # content the file gained independently, unrelated to this hunk).
     result = []
     old_idx = 0
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
@@ -341,20 +270,13 @@ def build_replacement(old_lines, new_lines, window_lines):
             result.extend(new_lines[_map_new_index(old_lines, new_lines, i1):_map_new_index(old_lines, new_lines, i2)]
                           if False else window_lines[j1:j2])
         elif tag == "replace" or tag == "delete":
-            pass  # covered by new_lines splice below via simpler approach
+            pass
         elif tag == "insert":
             result.extend(window_lines[j1:j2])
 
-    # The opcode-based reconstruction above is intentionally conservative;
-    # for the common case (old_lines matches window_lines closely with at
-    # most minor drift), just emit new_lines directly plus any window-only
-    # insertions found by the matcher.
     if difflib.SequenceMatcher(None, old_lines, window_lines, autojunk=False).ratio() > 0.97:
         return "\n".join(new_lines)
 
-    # Otherwise, splice: walk opcodes, emit new_lines' corresponding slice
-    # for equal/replace/delete regions, and pass through window's own
-    # insert regions untouched.
     new_pos_map = _align_new_lines(old_lines, new_lines)
     out = []
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
@@ -369,8 +291,6 @@ def build_replacement(old_lines, new_lines, window_lines):
 
 
 def _align_new_lines(old_lines, new_lines):
-    """Map each old_lines index to the corresponding new_lines index,
-    using their own diff (old->new is exactly what the hunk specifies)."""
     sm = difflib.SequenceMatcher(None, old_lines, new_lines, autojunk=False)
     mapping = {}
     for tag, i1, i2, j1, j2 in sm.get_opcodes():
@@ -390,10 +310,6 @@ def _align_new_lines(old_lines, new_lines):
 def _map_new_index(old_lines, new_lines, i):
     return _align_new_lines(old_lines, new_lines).get(i, len(new_lines))
 
-
-# ---------------------------------------------------------------------
-# Apply
-# ---------------------------------------------------------------------
 
 def apply_file_change(path, change):
     if change.is_new_file:
@@ -459,42 +375,27 @@ def apply_file_change(path, change):
         print(f"  {path}: 0 hunks applied, {skipped} skipped — file left untouched")
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: python3 patch-fixer.py your-patch.patch [target_root]")
-        sys.exit(1)
-
-    patch_path = sys.argv[1]
-    root = sys.argv[2] if len(sys.argv) > 2 else "."
-    abs_root = os.path.abspath(root)
-
+def process_one_patch(patch_path, abs_root):
     if not os.path.isfile(patch_path):
-        print(f"ERROR: {patch_path} not found")
-        sys.exit(1)
-    if not os.path.isdir(abs_root):
-        print(f"ERROR: {abs_root} is not a directory")
-        sys.exit(1)
+        print(f"ERROR: {patch_path} not found — skipping")
+        return
 
     print(f"Parsing: {patch_path}")
 
     repo_root = find_git_repo_root(abs_root)
     if repo_root:
         if try_git_am(repo_root, patch_path):
-            print("\nDone via git am — fuzzy matching wasn't needed.")
+            print("Done via git am — fuzzy matching wasn't needed.\n")
             return
         print()
 
     changes = parse_patch(patch_path)
-    print(f"Found {len(changes)} file change(s) across the patch")
+    print(f"Found {len(changes)} file change(s) in {patch_path}")
     print(f"Searching under: {abs_root}\n")
 
     for change in changes:
         if change.is_new_file:
             target = os.path.join(abs_root, os.path.dirname(change.path), os.path.basename(change.path))
-            # For new files we still need *a* place to put them; try to
-            # locate the containing directory via its parent's basename
-            # existing elsewhere, else fall back to the diff's own path
-            # relative to root.
             parent_name = os.path.basename(os.path.dirname(change.path))
             found_dir = None
             if parent_name:
@@ -512,6 +413,40 @@ def main():
             print(f"{change.path}: not found anywhere under {abs_root}, skipping")
             continue
         apply_file_change(target, change)
+
+    print()
+
+
+def main():
+    if len(sys.argv) < 2:
+        print("Usage: python3 patch-fixer.py patch1.patch [patch2.patch ...] [target_root]")
+        sys.exit(1)
+
+    args = sys.argv[1:]
+
+    if os.path.isdir(args[-1]):
+        root = args[-1]
+        patch_paths = args[:-1]
+    else:
+        root = "."
+        patch_paths = args
+
+    if not patch_paths:
+        print("ERROR: no patch files given")
+        sys.exit(1)
+
+    abs_root = os.path.abspath(root)
+    if not os.path.isdir(abs_root):
+        print(f"ERROR: {abs_root} is not a directory")
+        sys.exit(1)
+
+    print(f"{len(patch_paths)} patch file(s) to apply, in order, against {abs_root}\n")
+
+    for i, patch_path in enumerate(patch_paths, 1):
+        print(f"=== [{i}/{len(patch_paths)}] {patch_path} ===")
+        process_one_patch(patch_path, abs_root)
+
+    print("All patches processed.")
 
 
 if __name__ == "__main__":
