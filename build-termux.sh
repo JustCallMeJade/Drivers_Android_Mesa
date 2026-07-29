@@ -80,11 +80,12 @@ meson setup build-android-aarch64 \
     -Dvideo-codecs=all \
     -Dplatform-sdk-version=28 \
     -Dandroid-stub=true \
-    -Dgallium-drivers= \
+    -Dgallium-drivers=freedreno \
     -Dvulkan-drivers=freedreno \
     -Dvulkan-beta=true \
     -Dfreedreno-kmds=kgsl \
-    -Degl=disabled \
-    -Dandroid-strict=false
+    -Degl=enabled \
+    -Dandroid-strict=false \
+    -Degl-native-platform=x11
 
     ninja -C build-aarch64 -j$(nproc) install
