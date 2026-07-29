@@ -13,7 +13,7 @@ mkdir -p $WORKDIR $OUTPUT
 
 cd $WORKDIR
 
-wget -O ndk.zip https://dl.google.com/android/repository/android-ndk-r30-beta2-linux.zip &> /dev/null
+wget -O ndk.zip https://dl.google.com/android/repository/android-ndk-r29-linux.zip &> /dev/null
 
 unzip ndk.zip &> /dev/null
 
@@ -27,7 +27,7 @@ export PKG_CONFIG_PATH="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
 
 export PKG_CONFIG_LIBDIR="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
 
-export NDK_BIN="$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
+export NDK_BIN="$WORKDIR/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
 
 git clone --depth=1 https://gitlab.freedesktop.org/mesa/mesa.git
 
