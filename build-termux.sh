@@ -85,4 +85,4 @@ meson setup build-android-aarch64 \
     -Dandroid-strict=false \
     -Degl-native-platform=x11
 
-    ninja -C build-aarch64 -j$(nproc) install
+    ninja -C build-android-aarch64 -j$(nproc) install
