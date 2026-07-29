@@ -27,7 +27,7 @@ export PKG_CONFIG_PATH="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
 
 export PKG_CONFIG_LIBDIR="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
 
-export NDK-BIN="$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
+export NDK_BIN="$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
 
 git clone --depth=1 https://gitlab.freedesktop.org/mesa/mesa.git
 
@@ -35,12 +35,12 @@ cd mesa
 
 cat <<EOF > android.txt
 [binaries]
-ar = '$ndk/llvm-ar'
-c = ['$ndk/aarch64-linux-android28-clang', '-fno-exceptions', '-fno-unwind-tables', '-fno-asynchronous-unwind-tables', '--start-no-unused-arguments', '-static-libstdc++', '--end-no-unused-arguments', '-Wno-error']
-cpp = ['$NDK-BKN/aarch64-linux-android28-clang++', '-fno-exceptions', '-fno-unwind-tables', '-fno-asynchronous-unwind-tables', '--start-no-unused-arguments', '-static-libstdc++', '--end-no-unused-arguments', '-Wno-error']
-c_ld = '$NDK-BIN/ld.lld'
-cpp_ld = '$NDK-BIN/ld.lld'
-strip = '$NDK-BIN/llvm-strip'
+ar = '$NDK_BIN/llvm-ar'
+c = ['$NDK_BIN/aarch64-linux-android28-clang', '-fno-exceptions', '-fno-unwind-tables', '-fno-asynchronous-unwind-tables', '--start-no-unused-arguments', '-static-libstdc++', '--end-no-unused-arguments', '-Wno-error']
+cpp = ['$NDK_BIN/aarch64-linux-android28-clang++', '-fno-exceptions', '-fno-unwind-tables', '-fno-asynchronous-unwind-tables', '--start-no-unused-arguments', '-static-libstdc++', '--end-no-unused-arguments', '-Wno-error']
+c_ld = '$NDK_BIN/ld.lld'
+cpp_ld = '$NDK_BIN/ld.lld'
+strip = '$NDK_BIN/llvm-strip'
 pkg-config = ['env', 'PKG_CONFIG_LIBDIR=$rfs/lib/pkg-config:$rfs/share/pkg-config', 'PKG_CONFIG_PATH=$rfs/lib/pkgconfig:$rfs/lib/pkgconfig', 'pkg-config']
 
 [host_machine]
