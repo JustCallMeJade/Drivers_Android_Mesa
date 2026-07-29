@@ -13,7 +13,7 @@ mkdir -p $WORKDIR $OUTPUT
 
 cd $WORKDIR
 
-wget -O ndk.zip https://dl.google.com/android/repository/android-ndk-r29-linux.zip &> /dev/null
+wget -O ndk.zip https://github.com/SnowNF/ndk-aarch64-linux/releases/download/0.0.2/android-ndk-r29-linux-aarch64.tar.gz &> /dev/null
 
 unzip ndk.zip &> /dev/null
 
@@ -27,7 +27,7 @@ export PKG_CONFIG_PATH="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
 
 export PKG_CONFIG_LIBDIR="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
 
-export NDK_BIN="$WORKDIR/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
+export NDK_BIN="$WORKDIR/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
 
 git clone --depth=1 https://gitlab.freedesktop.org/mesa/mesa.git
 
@@ -60,10 +60,10 @@ c_ld = 'ld.lld'
 cpp_ld = 'ld.lld'
 pkg-config = 'pkg-config'
 
-[build_machine]
+[host_machine]
 system = 'linux'
-cpu_family = 'x86_64'
-cpu = 'x86_64'
+cpu_family = 'aarch64'
+cpu = 'armv8'
 endian = 'little'
 EOF
 
