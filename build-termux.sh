@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+set -euo pipefail
+
 WORKDIR="$PWD/Workdir"
 OUTPUT="$WORKDIR/Builds"
 
@@ -13,9 +15,9 @@ mkdir -p $WORKDIR $OUTPUT
 
 cd $WORKDIR
 
-wget -O ndk.zip https://github.com/SnowNF/ndk-aarch64-linux/releases/download/0.0.2/android-ndk-r29-linux-aarch64.tar.gz &> /dev/null
+wget -O ndk.tar.gz https://github.com/SnowNF/ndk-aarch64-linux/releases/download/0.0.2/android-ndk-r29-linux-aarch64.tar.gz &> /dev/null
 
-unzip ndk.zip &> /dev/null
+tar -zxf ndk.tar.gz &> /dev/null
 
 wget -O Rootfs.tar https://github.com/JustCallMeJade/TermuxFS-RootFS/releases/download/build-20260218/termuxfs-aarch64.tar &> /dev/null
 
