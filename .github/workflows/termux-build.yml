@@ -1,0 +1,41 @@
+name: Turnip termux
+
+on:
+  push:
+    paths:
+      - "CHANGELOGS.md"
+
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  API_VER: 35
+  BUILD_VARIANT: p2
+
+jobs:
+  build:
+    runs-on: ubuntu-26.04-arm
+
+    container:
+      image: debian:sid
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run build script
+        run: |
+          apt update && apt install sudo -y --fix-missing && bash build-termux.sh
+
+      - name: Debug zip output
+        run: |
+          find turnip_workdir -type f -name "*.zip" -print
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: turnip-build
+          path: Workdir/Builds/*
+          if-no-files-found: error
