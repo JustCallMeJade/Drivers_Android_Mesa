@@ -23,13 +23,19 @@ wget -O Rootfs.tar https://github.com/JustCallMeJade/TermuxFS-RootFS/releases/do
 
 tar -xf Rootfs.tar
 
+wget -O shims.zip https://raw.githubusercontent.com/leegao/mesa-26.2/test-kbase/shims.zip
+
+unzip shims.zip &> /dev/null
+
 export rfs="$WORKDIR/data/data/com.termux/files/usr"
+
+export shims="$WORKDIR/shims"
 
 export PKG_CONFIG_PATH="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
 
-export PKG_CONFIG_LIBDIR="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
-
 export NDK_BIN="$WORKDIR/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
+
+export PKG_CONFIG_SYSROOT_DIR="$NDK_BIN/../sysroot"
 
 git clone --depth=1 https://gitlab.freedesktop.org/mesa/mesa.git
 
