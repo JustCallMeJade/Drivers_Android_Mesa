@@ -9,7 +9,7 @@ sed -i '/^Types:/ {/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/debian.so
 
 apt update -y &> /dev/null
 apt build-dep -y mesa &> /dev/null
-apt install wget cmake pkg-config git -y &> /dev/null
+apt install wget cmake pkg-config git unzip -y &> /dev/null
 
 mkdir -p $WORKDIR $OUTPUT
 
