@@ -49,7 +49,7 @@ cpp = ['$NDK_BIN/aarch64-linux-android28-clang++', '-fno-exceptions', '-fno-unwi
 c_ld = '$NDK_BIN/ld.lld'
 cpp_ld = '$NDK_BIN/ld.lld'
 strip = '$NDK_BIN/llvm-strip'
-pkg-config = ['env', 'PKG_CONFIG_LIBDIR=$rfs/lib/pkgconfig:$rfs/share/pkgconfig', 'PKG_CONFIG_PATH=$rfs/lib/pkgconfig:$rfs/share/pkgconfig', 'pkg-config']
+pkg-config = 'pkg-config'
 
 [host_machine]
 system = 'android'
