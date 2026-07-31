@@ -75,6 +75,12 @@ cpu = 'armv8'
 endian = 'little'
 EOF
 
+wget https://raw.githubusercontent.com/leegao/mesa-26.2/refs/heads/test-kbase/0000-disable-android-detection.patch
+wget https://raw.githubusercontent.com/leegao/mesa-26.2/refs/heads/test-kbase/0006-wsi-no-pthread_cancel.patch
+
+git apply --3way --whitespace=fix 0000-disable-android-detection.patch
+git apply --3way --whitespace=fix 0006-wsi-no-pthread_cancel.patch
+
 meson setup build-android-aarch64 \
     --cross-file android.txt \
     --native-file native.txt \
