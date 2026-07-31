@@ -31,7 +31,7 @@ export rfs="$WORKDIR/data/data/com.termux/files/usr"
 
 export shims="$WORKDIR/shims"
 
-export PKG_CONFIG_PATH="$rfs/lib/pkgconfig:$rfs/share/pkgconfig"
+export PKG_CONFIG_PATH="$rfs/lib/pkgconfig:$rfs/share/pkgconfig:$shims/lib"
 
 export NDK_BIN="$WORKDIR/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
 
