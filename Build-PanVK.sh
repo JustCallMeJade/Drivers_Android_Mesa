@@ -24,7 +24,7 @@ fi
 echo "Only works in debian Arm64!!! press Ctrl + C to exit"
 echo "Installing build dependencies..."
 
-sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/debian.sources
+sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/ubuntu.sources
 
 sudo apt-get update -y > /dev/null 2>&1
 sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1
