@@ -168,7 +168,8 @@ meson setup build-android-aarch64 \
     -Dglvnd=disabled \
     -Dopengl=false \
     -Dgles1=disabled \
-    -Dgles2=disabled
+    -Dgles2=disabled \
+    -Dllvm=disabled
 
 ninja -C build-android-aarch64 -j"$(nproc)" install || exit 1
 
