@@ -5,7 +5,7 @@ workdir="$(pwd)/pan_workdir"
 ndk="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 mesasrc="https://github.com/leegao/mesa-26.2.git"
-deps="git pkg-config cmake build-essential wget2 patchelf zip"
+deps="git pkg-config cmake build-essential wget2 patchelf zip unzip"
 VERSION="26.2.0-V1.0"
 
 if [[ -z "${API_VER:-}" ]]; then
