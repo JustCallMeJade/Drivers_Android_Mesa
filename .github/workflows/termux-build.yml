@@ -1,4 +1,4 @@
-name: Turnip termux
+name: PanVK
 
 on:
   push:
@@ -37,5 +37,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: turnip-build
-          path: Workdir/Builds/*
+          path: pan_workdir/pan/*.so
           if-no-files-found: error
