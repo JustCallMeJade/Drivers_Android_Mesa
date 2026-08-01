@@ -130,7 +130,7 @@ ninja -C build-host install
 
 wget https://raw.githubusercontent.com/leegao/mesa-26.2/test-kbase/shims.zip
 unzip shims.zip
-export PKG_CONFIG_LIBDIR="$WORKDIR/mesa/shims/lib"
+export PKG_CONFIG_LIBDIR="$WORKDIR/mesa/shims/shims/lib"
 
 meson setup build-android-aarch64 \
     --cross-file android-aarch64.txt \
