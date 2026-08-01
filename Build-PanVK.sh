@@ -143,7 +143,16 @@ meson setup build-android-aarch64 \
     -Dvulkan-beta=true \
     -Degl=disabled \
     -Dandroid-strict=false \
-    -Dallow-fallback-for=libdrm || exit 1
+    -Dallow-fallback-for=libdrm \
+    -Dmesa-clc=system \
+    -Dprecomp-compiler=system \
+    -Dvalgrind=disabled \
+    -Dglx=disabled \
+    -Dgbm=disabled \
+    -Dglvnd=disabled \
+    -Dopengl=false \
+    -Dgles1=disabled \
+    -Dgles2=disabled
 
 ninja -C build-android-aarch64 -j"$(nproc)" install || exit 1
 
