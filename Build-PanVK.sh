@@ -1,12 +1,13 @@
 #!/bin/bash
-set -xeuo pipefail
+set -xe
 
 workdir="$(pwd)/pan_workdir"
-ndk="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
+ndk="$workdir/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 mesasrc="https://github.com/leegao/mesa-26.2.git"
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip"
 VERSION="26.2.0-V1.0"
+ndk_home="$ndk/.."
 
 if [[ -z "${API_VER:-}" ]]; then
     echo "API_VER is not set. Select an API version:"
@@ -46,13 +47,13 @@ sudo apt-get install -y \
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/pan"
 
-rm -rf "$workdir/r29"
+rm -rf "$workdir/android-ndk-r29"
 rm -rf "$workdir/mesa"
-rm -rf "$workdir/android-ndk-r29-linux-aarch64.tar.gz"
+rm -rf "$workdir/android-ndk-r29-linux.tar.gz"
 
 cd "$workdir"
-wget2 -q -nv https://github.com/SnowNF/ndk-aarch64-linux/releases/download/0.0.2/android-ndk-r29-linux-aarch64.tar.gz
-tar -xzf android-ndk-r29-linux-aarch64.tar.gz
+wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r29-linux.zip
+tar -xzf android-ndk-r29-linux.tar.gz
 
 git clone \
     --depth=1 \
@@ -61,6 +62,8 @@ git clone \
     "$mesasrc" mesa
     
 cd mesa
+
+unzip shims.zip -d ./
 
 git config user.name "PanVK-Builder"
 git config user.email "sdddxd86@gmail.com"
@@ -88,43 +91,79 @@ export LDFLAGS="-fuse-ld=lld"
 cat <<EOF > android-aarch64.txt
 [binaries]
 ar = '$ndk/llvm-ar'
-c = ['$ndk/aarch64-linux-android$API_VER-clang', '--sysroot=$sysroot', '-fno-exceptions', '-fno-unwind-tables', '-fno-asynchronous-unwind-tables', '--start-no-unused-arguments', '-static-libstdc++', '--end-no-unused-arguments', '-Wno-error']
-cpp = ['$ndk/aarch64-linux-android$API_VER-clang++', '--sysroot=$sysroot', '-fno-exceptions', '-fno-unwind-tables', '-fno-asynchronous-unwind-tables', '--start-no-unused-arguments', '-static-libstdc++', '--end-no-unused-arguments', '-Wno-error']
-c_ld = '$ndk/ld.lld'
-cpp_ld = '$ndk/ld.lld'
+c = ['$ndk/aarch64-linux-android$API_VER-clang', '-D__TERMUX__']
+cpp = ['$ndk/aarch64-linux-android$API_VER-clang++',
+       '-fno-exceptions',
+       '--start-no-unused-arguments',
+       '--end-no-unused-arguments',
+       '-D__TERMUX__']
 strip = '$ndk/llvm-strip'
 pkg-config = '/usr/bin/pkg-config'
 
 [built-in options]
-c_args = ['--sysroot=$sysroot', '-Wno-error']
-cpp_args = ['--sysroot=$sysroot']
-c_link_args = ['--sysroot=$sysroot']
-cpp_link_args = ['--sysroot=$sysroot']
+c_args = [
+    '--sysroot=$sysroot',
+    '-fno-emulated-tls',
+    '-I$workdir/mesa/shims/include',
+    '-isystem$sysroot/usr/include',
+    '-DHAVE_STRUCT_TIMESPEC',
+    '-DHAVE_DLFCN_H',
+    '-UHAVE_SECURE_GETENV',
+    '-UHAVE_QSORT_S',
+    '-include', 'fcntl.h',
+    '-include', 'time.h',
+    '-Wl,-llog',
+    '-Wl,-lsync',
+    '-fvisibility=default'
+]
+
+cpp_args = [
+    '--sysroot=$sysroot',
+    '-include', '$workdir/mesa/src/util/u_gralloc/force_aosp_abi.h',
+    '-D_LIBCPP_DISABLE_EXTERN_TEMPLATE',
+    '-fno-emulated-tls',
+    '-I$workdir/mesa/shims/include',
+    '-isystem$sysroot/usr/include',
+    '-DHAVE_STRUCT_TIMESPEC',
+    '-DHAVE_DLFCN_H',
+    '-UHAVE_SECURE_GETENV',
+    '-UHAVE_QSORT_S',
+    '-include', 'fcntl.h',
+    '-include', 'time.h',
+    '-include', 'dlfcn.h',
+    '-Wl,-llog',
+    '-Wl,-lsync',
+    '-fvisibility=default',
+    '-D_LIBCPP_ABI_NAMESPACE=__1'
+]
+
+c_link_args = [
+    '--sysroot=$sysroot',
+    '-Wl,--allow-shlib-undefined',
+    '-L$workdir/mesa/shims',
+    '-L$ndk_home/lib/clang/18/linux/aarch64',
+    '-llog',
+    '-lsync'
+]
+
+cpp_link_args = [
+    '--sysroot=$sysroot',
+    '-Wl,--allow-shlib-undefined',
+    '-L$workdir/mesa/shims',
+    '-L$ndk_home/lib/clang/18/linux/aarch64',
+    '-llog',
+    '-lsync'
+]
 
 [properties]
 sys_root = '$sysroot'
+needs_exe_wrapper = true
+pkg_config_libdir = '$workdir/mesa/shims'
 
 [host_machine]
 system = 'android'
 cpu_family = 'aarch64'
-cpu = 'armv8'
-endian = 'little'
-EOF
-
-cat <<EOF > native.txt
-[binaries]
-c = 'clang'
-cpp = 'clang++'
-ar = 'llvm-ar'
-strip = 'llvm-strip'
-c_ld = 'ld.lld'
-cpp_ld = 'ld.lld'
-pkg-config = 'pkg-config'
-
-[build_machine]
-system = 'linux'
-cpu_family = 'aarch64'
-cpu = 'armv8'
+cpu = 'aarch64'
 endian = 'little'
 EOF
 
@@ -136,17 +175,17 @@ meson setup build-host \
               -Dprecomp-compiler=enabled \
               -Dinstall-precomp-compiler=true \
               -Dllvm=enabled \
-              -Dmesa-clc=enabled -Dinstall-mesa-clc=true \
-              --prefix=/usr
-ninja -C build-host install
+              -Dmesa-clc=enabled -Dinstall-mesa-clc=true
+              
+ninja -C build-host src/compiler/clc/mesa_clc src/compiler/spirv/vtn_bindgen2 src/panfrost/clc/panfrost_compile
 
-wget https://raw.githubusercontent.com/leegao/mesa-26.2/test-kbase/shims.zip
-unzip shims.zip
-export PKG_CONFIG_LIBDIR="$WORKDIR/mesa/shims/shims/lib"
+ln -sf "build-host/src/compiler/clc/mesa_clc" "build-host/src/compiler/clc/mesa-clc"
+ln -sf "build-host/src/compiler/spirv/vtn_bindgen2" "build-host/src/compiler/spirv/vtn-bindgen2"
+
+export PATH=$workdir/mesa/build-host/src/compiler/clc/mesa-clc:$workdir/mesa/build-host/compiler/spirv/vtn_bindgen2:$workdir/mesa/build-host/src/compiler/clc:$workdir/mesa/build-host/src/compiler/spirv:$workdir/mesa/build-host/src/panfrost/clc:$PATH
 
 meson setup build-android-aarch64 \
     --cross-file android-aarch64.txt \
-    --native-file native.txt \
     --prefix "$workdir/pan" \
     -Dbuildtype=debugoptimized \
     -Dstrip=true \
@@ -171,14 +210,14 @@ meson setup build-android-aarch64 \
     -Dgles2=disabled \
     -Dllvm=disabled
 
-ninja -C build-android-aarch64 -j"$(nproc)" install || exit 1
+ninja -C build-android-aarch64 -j"$(nproc)"
 
-cd "$workdir/pan/lib"
+cd "$workdir/mesa/build/src/panfrost/vulkan/"
 
 echo "packaging PanVK"
 
-patchelf --set-soname vulkan.mali.so libvulkan_panfrost.so
-mv libvulkan_panfrost.so vulkan.mali.so
+patchelf --set-soname libvulkan_mali.so libvulkan_panfrost.so
+mv libvulkan_panfrost.so libvulkan_mali.so
 
 cat <<EOF > meta.json
 {
@@ -190,11 +229,11 @@ cat <<EOF > meta.json
 "vendor": "Mesa3D, Leegao",
 "driverVersion": "Vulkan 1.4",
 "minApi": 28,
-"libraryName": "vulkan.mali.so"
+"libraryName": "libvulkan_mali.so"
 }
 EOF
 
-zip -9 "$workdir/pan/PanVK-v$VERSION.zip" vulkan.mali.so meta.json
+zip -9 "$workdir/mesa/build/src/panfrost/vulkan/PanVK-v$VERSION.zip" libvulkan_mali.so meta.json
 
 if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
     echo "VERSION=$VERSION" >> "$GITHUB_ENV"
