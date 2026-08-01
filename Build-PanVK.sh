@@ -223,7 +223,7 @@ cat <<EOF > meta.json
 {
 "schemaVersion": 1,
 "name": "Mesa PanVK v$VERSION",
-"description": "Built from Mesa source + GPU hacks",
+"description": "Built from Leegao's mesa + custom mali_kbase patches",
 "author": "JustCallMeJade",
 "packageVersion": "1",
 "vendor": "Mesa3D, Leegao",
