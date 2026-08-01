@@ -42,7 +42,8 @@ sudo apt-get install -y \
               bison \
               flex \
               libdrm-dev \
-              pkg-config &> /dev/null
+              pkg-config \
+              clang &> /dev/null
               
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/pan"
