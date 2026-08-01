@@ -2,5 +2,5 @@
 
 find . -type f -exec grep -Il '@TERMUX_PREFIX@' {} \; 2>/dev/null |
 while IFS= read -r file; do
-    sed -i 's|@TERMUX_PREFIX@|/data/data/com.termux/files|g' "$file" >/dev/null 2>&1
+    sed -i 's|@TERMUX_PREFIX@|/data/data/com.termux/files/usr|g' "$file" >/dev/null 2>&1
 done
