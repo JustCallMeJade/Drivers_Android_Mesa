@@ -116,6 +116,18 @@ cpu = 'armv8'
 endian = 'little'
 EOF
 
+meson setup build-host \
+              -Dplatforms=[] \
+              -Dgallium-drivers=[] \
+              -Dvulkan-drivers=[] \
+              -Dtools=panfrost \
+              -Dprecomp-compiler=enabled \
+              -Dinstall-precomp-compiler=true \
+              -Dllvm=enabled \
+              -Dmesa-clc=enabled -Dinstall-mesa-clc=true \
+              --prefix=/usr
+ninja -C build-host install
+
 meson setup build-android-aarch64 \
     --cross-file android-aarch64.txt \
     --native-file native.txt \
