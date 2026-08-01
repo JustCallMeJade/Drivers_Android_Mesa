@@ -42,12 +42,16 @@ cd "$workdir"
 wget2 -q -nv https://github.com/SnowNF/ndk-aarch64-linux/releases/download/0.0.2/android-ndk-r29-linux-aarch64.tar.gz
 tar -xzf android-ndk-r29-linux-aarch64.tar.gz
 
-git clone "$mesasrc" --depth=1
+git clone \
+    --depth=1 \
+    --single-branch \
+    --branch test-kbase \
+    "$mesasrc" mesa
+    
 cd mesa
 
 git config user.name "PanVK-Builder"
 git config user.email "sdddxd86@gmail.com"
-git switch test-kbase
 
 rm -f VERSION 
 cat <<EOF > VERSION
@@ -112,7 +116,7 @@ cpu = 'armv8'
 endian = 'little'
 EOF
 
-meson setup build-android-aarch64 || exit 1 \
+meson setup build-android-aarch64 \
     --cross-file android-aarch64.txt \
     --native-file native.txt \
     --prefix "$workdir/pan" \
@@ -127,7 +131,7 @@ meson setup build-android-aarch64 || exit 1 \
     -Dvulkan-beta=true \
     -Degl=disabled \
     -Dandroid-strict=false \
-    -Dallow-fallback-for=libdrm
+    -Dallow-fallback-for=libdrm || exit 1
 
 ninja -C build-android-aarch64 -j"$(nproc)" install || exit 1
 
