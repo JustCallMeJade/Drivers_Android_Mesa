@@ -27,7 +27,7 @@ jobs:
 
       - name: Run build script
         run: |
-          apt update && apt install sudo -y --fix-missing && bash build-termux.sh
+          apt update && apt install sudo -y --fix-missing && bash Build-PanVK.sh
 
       - name: Debug zip output
         run: |
