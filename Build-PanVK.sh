@@ -49,11 +49,11 @@ mkdir -p "$workdir/pan"
 
 rm -rf "$workdir/android-ndk-r29"
 rm -rf "$workdir/mesa"
-rm -rf "$workdir/android-ndk-r29-linux.tar.gz"
+rm -rf "$workdir/android-ndk-r29-linux.zip"
 
 cd "$workdir"
 wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r29-linux.zip
-tar -xzf android-ndk-r29-linux.tar.gz
+unzip android-ndk-r29-linux.zip &> /dev/null
 
 git clone \
     --depth=1 \
@@ -182,11 +182,10 @@ ninja -C build-host src/compiler/clc/mesa_clc src/compiler/spirv/vtn_bindgen2 sr
 ln -sf "build-host/src/compiler/clc/mesa_clc" "build-host/src/compiler/clc/mesa-clc"
 ln -sf "build-host/src/compiler/spirv/vtn_bindgen2" "build-host/src/compiler/spirv/vtn-bindgen2"
 
-export PATH=$workdir/mesa/build-host/src/compiler/clc/mesa-clc:$workdir/mesa/build-host/compiler/spirv/vtn_bindgen2:$workdir/mesa/build-host/src/compiler/clc:$workdir/mesa/build-host/src/compiler/spirv:$workdir/mesa/build-host/src/panfrost/clc:$PATH
+export PATH="$workdir/mesa/build-host/src/compiler/clc:$workdir/mesa/build-host/src/compiler/spirv:$workdir/mesa/build-host/src/panfrost/clc:$PATH"
 
-meson setup build-android-aarch64 \
+meson setup build \
     --cross-file android-aarch64.txt \
-    --prefix "$workdir/pan" \
     -Dbuildtype=debugoptimized \
     -Dstrip=true \
     -Dplatforms=android \
