@@ -19,23 +19,15 @@ wget -O ndk.tar.gz https://github.com/SnowNF/ndk-aarch64-linux/releases/download
 
 tar -zxf ndk.tar.gz &> /dev/null
 
-wget -O Rootfs.tar https://github.com/JustCallMeJade/TermuxFS-RootFS/releases/download/build-20260218/termuxfs-aarch64.tar &> /dev/null
-
-tar -xf Rootfs.tar
-
 wget -O shims.zip https://raw.githubusercontent.com/leegao/mesa-26.2/test-kbase/shims.zip
 
 unzip shims.zip &> /dev/null
 
-export rfs="$WORKDIR/data/data/com.termux/files/usr"
-
 export shims="$WORKDIR/shims"
 
-export PKG_CONFIG_PATH="$rfs/lib/pkgconfig:$rfs/share/pkgconfig:$shims/lib"
+export PKG_CONFIG_LIBDIR="$shims/lib"
 
 export NDK_BIN="$WORKDIR/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
-
-export PKG_CONFIG_SYSROOT_DIR="$NDK_BIN/../sysroot"
 
 git clone --depth=1 https://gitlab.freedesktop.org/mesa/mesa.git
 
@@ -85,18 +77,16 @@ meson setup build-android-aarch64 \
     --cross-file android.txt \
     --native-file native.txt \
     --prefix "$OUTPUT" \
-    -Dbuildtype=debugoptimized \
+    -Dbuildtype=release \
     -Dstrip=true \
     -Dplatforms=android,x11 \
-    -Dvideo-codecs=all \
     -Dplatform-sdk-version=28 \
     -Dandroid-stub=true \
-    -Dgallium-drivers=freedreno \
+    -Dgallium-drivers=zink \
     -Dvulkan-drivers=freedreno \
     -Dvulkan-beta=true \
     -Dfreedreno-kmds=kgsl \
     -Degl=enabled \
-    -Dandroid-strict=false \
     -Degl-native-platform=x11
 
     ninja -C build-android-aarch64 -j$(nproc) install
