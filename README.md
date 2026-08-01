@@ -64,6 +64,13 @@ https://github.com/Vauzi-17
 **Misc patches:**
 https://github.com/WinNative-Emu
 
+
+
+**Panvk mesa source:**
+https://github.com/leegao
+
+
+
 **Creds to all of them and support them❤️**
 ## Supported GPUs (6xx supported any)
 
