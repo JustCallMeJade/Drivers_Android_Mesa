@@ -209,7 +209,7 @@ meson setup build \
     -Dgles2=disabled \
     -Dllvm=disabled
 
-ninja -C build-android-aarch64 -j"$(nproc)"
+ninja -C build -j"$(nproc --all)"
 
 cd "$workdir/mesa/build/src/panfrost/vulkan/"
 
