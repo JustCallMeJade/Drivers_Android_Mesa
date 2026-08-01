@@ -37,5 +37,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: turnip-build
-          path: pan_workdir/pan/*.so
+          path: pan_workdir/mesa/build/src/panfrost/vulkan/*.zip
           if-no-files-found: error
