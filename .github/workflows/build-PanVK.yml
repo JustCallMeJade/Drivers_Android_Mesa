@@ -73,6 +73,10 @@ jobs:
           if [ "${{ matrix.platforms }}" = "x11,android" ]; then
             echo "Applying X11/Android compatibility patches..."
             wget2 https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/refs/heads/main/Extras/patch-fixer.py
+            rm -rf 0000-disable-android-detection.patch
+            rm -rf 0006-wsi-no-pthread_cancel.patch
+            wget2 https://raw.githubusercontent.com/JustCallMeJade/mesa-26.2/refs/heads/main/0000-disable-android-detection.patch
+            wget2 https://raw.githubusercontent.com/JustCallMeJade/mesa-26.2/refs/heads/main/0006-wsi-no-pthread_cancel.patch
             python3 patch-fixer.py 0000-disable-android-detection.patch
             python3 patch-fixer.py 0006-wsi-no-pthread_cancel.patch
           fi
