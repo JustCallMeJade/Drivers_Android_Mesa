@@ -1,9 +1,11 @@
 name: PanVK
 
 on:
-  push:
-    paths:
-      - "CHANGELOGS.md"
+  workflow_run:
+    workflows:
+     ["build-turnip.yml"]
+    types: 
+    - requested
 
   workflow_dispatch:
 
