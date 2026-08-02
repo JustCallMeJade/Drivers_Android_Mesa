@@ -73,8 +73,9 @@ jobs:
 
           if [ "${{ matrix.platforms }}" = "x11,android" ]; then
             echo "Applying X11/Android compatibility patches..."
-            patch -p1 -i 0000-disable-android-detection.patch
-            patch -p1 -i 0006-wsi-no-pthread_cancel.patch
+            wget2 https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/refs/heads/main/Extras/patch-fixer.py
+            python3 patch-fixer.py 0000-disable-android-detection.patch
+            python3 patch-fixer.py 0006-wsi-no-pthread_cancel.patch
           fi
 
           sed -i 's/anb->handle->/((const native_handle_t \*)anb->handle)->/g' src/vulkan/runtime/vk_android.c || true
