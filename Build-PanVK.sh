@@ -127,7 +127,7 @@ export PATH="$workdir/mesa/build-host/src/compiler/clc:$workdir/mesa/build-host/
 
 meson setup build \
     --cross-file android-aarch64.txt \
-    -Dbuildtype=debugoptimized \
+    -Dbuildtype=release \
     -Dstrip=true \
     -Dplatforms=android \
     -Dvideo-codecs=all \
