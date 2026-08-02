@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 env:
-  API_VER: 35
+  API_VER: 36
   BUILD_VARIANT: p2
   VERSION: "26.2.0-V1.0"
   WORKDIR: "${{ github.workspace }}/pan_workdir"
@@ -50,13 +50,13 @@ jobs:
           mkdir -p "$WORKDIR"
           cd "$WORKDIR"
           
-          wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r29-linux.zip
-          unzip -q android-ndk-r29-linux.zip
-          rm android-ndk-r29-linux.zip
+          wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-beta2-linux.zip
+          unzip -q android-ndk-r30-beta2-linux.zip
+          rm android-ndk-r30-beta2-linux.zip
 
-          echo "NDK=$WORKDIR/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
-          echo "SYSROOT=$WORKDIR/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot" >> $GITHUB_ENV
-          echo "NDK_HOME=$WORKDIR/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64" >> $GITHUB_ENV
+          echo "NDK=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
+          echo "SYSROOT=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot" >> $GITHUB_ENV
+          echo "NDK_HOME=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64" >> $GITHUB_ENV
 
       - name: Fetch Mesa source & apply patches
         run: |
