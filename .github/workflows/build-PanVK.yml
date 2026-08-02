@@ -58,6 +58,10 @@ jobs:
           wget2 https://raw.githubusercontent.com/JustCallMeJade/termux-packages/refs/heads/master/ndk-patches/29/"$patch"
           patch -p1 -i "$patch"
           done
+          find . -type f -exec grep -Il '@TERMUX_PREFIX@' {} \; 2>/dev/null |
+          while IFS= read -r file; do
+          sed -i 's|@TERMUX_PREFIX@|/data/data/com.termux/files/usr|g' "$file" >/dev/null 2>&1
+          done
           echo "NDK=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
           echo "SYSROOT=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot" >> $GITHUB_ENV
           echo "NDK_HOME=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64" >> $GITHUB_ENV
