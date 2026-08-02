@@ -36,7 +36,7 @@ sudo apt-get install -y \
               clang \
               llvm \
               llvm-dev &> /dev/null
-sudo apt install -y rustc cargo &> /dev/null
+sudo apt remove -y rustc cargo &> /dev/null || true
 
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/pan"
@@ -46,6 +46,20 @@ rm -rf "$workdir/mesa"
 rm -rf "$workdir/android-ndk-r30-beta2-linux.zip"
 
 cd "$workdir"
+
+export RUSTUP_HOME="$workdir/rustup"
+export CARGO_HOME="$workdir/cargo"
+export PATH="$CARGO_HOME/bin:$PATH"
+export RUSTUP_HOME="$workdir/rustup"
+export CARGO_HOME="$workdir/cargo"
+export PATH="$CARGO_HOME/bin:$PATH"
+export CARGO_BUILD_TARGET=aarch64-linux-android
+export RUSTFLAGS="-Clinker=$ndk/aarch64-linux-android36-clang"
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+rustup target add aarch64-linux-android
+
 wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-beta2-linux.zip
 unzip android-ndk-r30-beta2-linux.zip &> /dev/null
 
