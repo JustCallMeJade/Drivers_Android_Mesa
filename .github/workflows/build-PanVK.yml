@@ -34,9 +34,7 @@ jobs:
 
       - name: Install system dependencies
         run: |
-          sudo apt-get update -y > /dev/null 2>&1
-          sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/ubuntu.sources || true
-
+          sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
           sudo apt-get update -y > /dev/null 2>&1
           sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1 || true
           sudo apt-get build-dep libarchive -y -qq > /dev/null 2>&1 || true
