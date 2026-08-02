@@ -2,24 +2,12 @@
 set -xe
 
 workdir="$(pwd)/pan_workdir"
-ndk="$workdir/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
+ndk="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 mesasrc="https://github.com/leegao/mesa-26.2.git"
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip"
 VERSION="26.2.0-V1.0"
 ndk_home="$ndk/.."
-
-if [[ -z "${API_VER:-}" ]]; then
-    echo "API_VER is not set. Select an API version:"
-    select ver in 27 28 29 30 31 32 33 34 35 36; do
-        if [[ -n "$ver" ]]; then
-            API_VER="$ver"
-            export API_VER
-            break
-        fi
-        echo "Invalid selection."
-    done
-fi
 
 echo "Only works in Ubuntu x86_64!!! press Ctrl + C to exit"
 echo "Installing build dependencies..."
@@ -52,13 +40,13 @@ sudo apt-get install -y \
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/pan"
 
-rm -rf "$workdir/android-ndk-r29"
+rm -rf "$workdir/android-ndk-r30-beta2"
 rm -rf "$workdir/mesa"
-rm -rf "$workdir/android-ndk-r29-linux.zip"
+rm -rf "$workdir/android-ndk-r30-beta2-linux.zip"
 
 cd "$workdir"
-wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r29-linux.zip
-unzip android-ndk-r29-linux.zip &> /dev/null
+wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-beta2-linux.zip
+unzip android-ndk-r30-beta2-linux.zip &> /dev/null
 
 git clone \
     --depth=1 \
@@ -87,8 +75,8 @@ sed -i 's/#if defined(HAVE_MEMFD_CREATE) \&\& !defined __TERMUX__/#if defined(HA
 cat > android-aarch64.txt <<EOF
 [binaries]
 ar = '$ndk/llvm-ar'
-c = ['$ndk/aarch64-linux-android$API_VER-clang', '-D__TERMUX__']
-cpp = ['$ndk/aarch64-linux-android$API_VER-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
+c = ['$ndk/aarch64-linux-android36-clang', '-D__TERMUX__']
+cpp = ['$ndk/aarch64-linux-android36-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
 strip = '$ndk/llvm-strip'
 pkg-config = '/usr/bin/pkg-config'
 
@@ -133,7 +121,7 @@ meson setup build \
     -Dstrip=true \
     -Dplatforms=android \
     -Dvideo-codecs=all \
-    -Dplatform-sdk-version="$API_VER" \
+    -Dplatform-sdk-version=36 \
     -Dandroid-stub=true \
     -Dgallium-drivers= \
     -Dvulkan-drivers=panfrost \
@@ -165,12 +153,12 @@ cat <<EOF > meta.json
 {
 "schemaVersion": 1,
 "name": "Mesa PanVK v$VERSION",
-"description": "Built from Leegao's mesa + custom mali_kbase patches",
+"description": "Built from Leegao's mesa + custom mali_kbase patches. Needs minimum android kernel 6.10",
 "author": "JustCallMeJade",
 "packageVersion": "1",
 "vendor": "Mesa3D, Leegao",
 "driverVersion": "Vulkan 1.4",
-"minApi": 28,
+"minApi": 36,
 "libraryName": "libvulkan_mali.so"
 }
 EOF
