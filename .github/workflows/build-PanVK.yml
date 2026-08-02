@@ -38,12 +38,25 @@ jobs:
           sudo apt-get update -y > /dev/null 2>&1
           sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1 || true
           sudo apt-get build-dep libarchive -y -qq > /dev/null 2>&1 || true
+          sudo apt-get remove -y rustc cargo || true
           sudo apt-get install -y python3-pip --no-install-recommends
           pip3 install meson setuptools mako pyyaml packaging --break-system-packages
           sudo apt-get install -y \
             git pkg-config cmake build-essential wget2 patchelf zip unzip meson ninja-build \
             llvm-22-dev libclang-22-dev libclc-22-dev libllvmspirvlib-22-dev \
             libelf-dev spirv-tools bison flex libdrm-dev clang llvm llvm-dev > /dev/null 2>&1 || true
+
+      - name: Setup Rust toolchain
+        run: |
+          export RUSTUP_HOME="$WORKDIR/rustup"
+          export CARGO_HOME="$WORKDIR/cargo"
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$CARGO_HOME/bin" >> $GITHUB_PATH
+          echo "RUSTUP_HOME=$WORKDIR/rustup" >> $GITHUB_ENV
+          echo "CARGO_HOME=$WORKDIR/cargo" >> $GITHUB_ENV
+          echo "CARGO_BUILD_TARGET=aarch64-linux-android" >> $GITHUB_ENV
+          
+          $CARGO_HOME/bin/rustup target add aarch64-linux-android
 
       - name: Download & extract Android NDK
         run: |
@@ -57,12 +70,24 @@ jobs:
           echo "NDK=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
           echo "SYSROOT=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot" >> $GITHUB_ENV
           echo "NDK_HOME=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64" >> $GITHUB_ENV
+          echo "RUSTFLAGS=-Clinker=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android$API_VER-clang" >> $GITHUB_ENV
 
       - name: Fetch Mesa source & apply patches
         run: |
           cd "$WORKDIR"
           git clone --depth=1 --single-branch --branch test-kbase "$MESASRC" mesa
           cd mesa
+
+          mkdir -p .cargo
+          cat > .cargo/config.toml <<EOF
+          [target.aarch64-linux-android]
+          linker = "$NDK/aarch64-linux-android$API_VER-clang"
+          ar = "$NDK/llvm-ar"
+
+          [env]
+          CC_aarch64_linux_android = "$NDK/aarch64-linux-android$API_VER-clang"
+          CXX_aarch64_linux_android = "$NDK/aarch64-linux-android$API_VER-clang++"
+          EOF
 
           unzip -q shims.zip -d ./ || true
 
@@ -71,7 +96,6 @@ jobs:
           echo "$VERSION" > VERSION
 
           if [ "${{ matrix.platforms }}" = "x11,android" ]; then
-            echo "Applying X11/Android compatibility patches..."
             wget2 https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/refs/heads/main/Extras/patch-fixer.py
             rm -rf 0000-disable-android-detection.patch
             rm -rf 0006-wsi-no-pthread_cancel.patch
@@ -165,7 +189,8 @@ jobs:
             -Dopengl=false \
             -Dgles1=disabled \
             -Dgles2=disabled \
-            -Dllvm=disabled
+            -Dllvm=disabled \
+            -Dpanfrost-rust=true
 
           ninja -C build -j"$(nproc --all)"
 
