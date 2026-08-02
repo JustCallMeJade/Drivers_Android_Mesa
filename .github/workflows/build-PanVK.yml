@@ -54,9 +54,10 @@ jobs:
           unzip -q android-ndk-r30-beta2-linux.zip
           rm android-ndk-r30-beta2-linux.zip
           cd $WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot
+          wget2 https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/refs/heads/main/Extras/patch-fixer.py
           for patch in 1.patch 2.patch 3.patch 4.patch 5.patch 6.patch 7.patch 8.patch 9.patch 10.patch 11.patch 12.patch 13.patch 14.patch 15.patch 16.patch 17.patch; do
           wget2 https://raw.githubusercontent.com/JustCallMeJade/termux-packages/refs/heads/master/ndk-patches/29/"$patch"
-          patch -p1 -i "$patch"
+          python3 patch-fixer.py "$patch"
           done
           find . -type f -exec grep -Il '@TERMUX_PREFIX@' {} \; 2>/dev/null |
           while IFS= read -r file; do
