@@ -71,8 +71,6 @@ git clone \
     
 cd mesa
 
-rustup target add aarch64-linux-android
-
 mkdir -p .cargo
 
 cat > .cargo/config.toml <<EOF
