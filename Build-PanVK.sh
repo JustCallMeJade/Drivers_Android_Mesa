@@ -21,10 +21,12 @@ if [[ -z "${API_VER:-}" ]]; then
     done
 fi
 
-echo "Only works in debian Arm64!!! press Ctrl + C to exit"
+echo "Only works in Ubuntu x86_64!!! press Ctrl + C to exit"
 echo "Installing build dependencies..."
 
-sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/ubuntu.sources
+apt install sudo -y &> /dev/null || true
+
+sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/ubuntu.sources || true
 
 sudo apt-get update -y > /dev/null 2>&1
 sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1
