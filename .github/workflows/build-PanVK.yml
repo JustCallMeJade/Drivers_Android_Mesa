@@ -44,7 +44,7 @@ jobs:
           pip3 install meson setuptools mako pyyaml packaging --break-system-packages
           sudo apt-get install -y \
             git pkg-config cmake build-essential wget2 patchelf zip unzip meson ninja-build \
-            llvm-20-dev libclang-20-dev libclc-20-dev libllvmspirvlib-20-dev \
+            llvm-22-dev libclang-22-dev libclc-22-dev libllvmspirvlib-22-dev \
             libelf-dev spirv-tools bison flex libdrm-dev clang llvm llvm-dev > /dev/null 2>&1 || true
 
       - name: Download & extract Android NDK
