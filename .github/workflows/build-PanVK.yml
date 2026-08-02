@@ -1,0 +1,198 @@
+name: PanVK
+
+on:
+  workflow_run:
+    workflows:
+      - "build-turnip.yml"
+    types: 
+      - requested
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  API_VER: 35
+  BUILD_VARIANT: p2
+  VERSION: "26.2.0-V1.0"
+  WORKDIR: "${{ github.workspace }}/pan_workdir"
+  MESASRC: "https://github.com/leegao/mesa-26.2.git"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platforms:
+          - "android"
+          - "x11,android"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -y > /dev/null 2>&1
+          sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/ubuntu.sources || true
+
+          sudo apt-get update -y > /dev/null 2>&1
+          sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1 || true
+          sudo apt-get build-dep libarchive -y -qq > /dev/null 2>&1 || true
+          
+          sudo apt-get install -y \
+            git pkg-config cmake build-essential wget2 patchelf zip unzip meson ninja-build \
+            llvm-20-dev libclang-20-dev libclc-20-dev libllvmspirvlib-20-dev \
+            libelf-dev spirv-tools bison flex libdrm-dev clang llvm llvm-dev > /dev/null 2>&1 || true
+
+      - name: Download & extract Android NDK
+        run: |
+          mkdir -p "$WORKDIR"
+          cd "$WORKDIR"
+          
+          wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r29-linux.zip
+          unzip -q android-ndk-r29-linux.zip
+          rm android-ndk-r29-linux.zip
+
+          echo "NDK=$WORKDIR/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
+          echo "SYSROOT=$WORKDIR/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot" >> $GITHUB_ENV
+          echo "NDK_HOME=$WORKDIR/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64" >> $GITHUB_ENV
+
+      - name: Fetch Mesa source & apply patches
+        run: |
+          cd "$WORKDIR"
+          git clone --depth=1 --single-branch --branch test-kbase "$MESASRC" mesa
+          cd mesa
+
+          unzip -q shims.zip -d ./ || true
+
+          git config user.name "PanVK-Builder"
+          git config user.email "sdddxd86@gmail.com"
+          echo "$VERSION" > VERSION
+
+          if [ "${{ matrix.platforms }}" = "x11,android" ]; then
+            echo "Applying X11/Android compatibility patches..."
+            patch -p1 -i 0000-disable-android-detection.patch
+            patch -p1 -i 0006-wsi-no-pthread_cancel.patch
+          fi
+
+          sed -i 's/anb->handle->/((const native_handle_t \*)anb->handle)->/g' src/vulkan/runtime/vk_android.c || true
+          sed -i 's/typedef const native_handle_t\* buffer_handle_t;/typedef void\* buffer_handle_t;/g' include/android_stub/cutils/native_handle.h || true
+          sed -i 's/, hnd->handle/, (void \*)hnd->handle/g' src/util/u_gralloc/u_gralloc_fallback.c || true
+          sed -i 's/native_buffer->handle->/((const native_handle_t \*)native_buffer->handle)->/g' src/vulkan/runtime/vk_android.c || true
+          sed -i 's/#if defined(HAVE_MEMFD_CREATE) \&\& !defined __TERMUX__/#if defined(HAVE_MEMFD_CREATE)/' src/util/anon_file.c
+
+      - name: Generate Meson cross file
+        run: |
+          cd "$WORKDIR/mesa"
+          cat > android-aarch64.txt <<EOF
+          [binaries]
+          ar = '$NDK/llvm-ar'
+          c = ['$NDK/aarch64-linux-android$API_VER-clang', '-D__TERMUX__']
+          cpp = ['$NDK/aarch64-linux-android$API_VER-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
+          strip = '$NDK/llvm-strip'
+          pkg-config = '/usr/bin/pkg-config'
+
+          [built-in options]
+          c_args = ['--sysroot=$SYSROOT', '-fno-emulated-tls', '-I$WORKDIR/mesa/shims/include', '-isystem$SYSROOT/usr/include', '-DHAVE_STRUCT_TIMESPEC', '-DHAVE_DLFCN_H', '-UHAVE_SECURE_GETENV', '-UHAVE_QSORT_S', '-include', 'fcntl.h', '-include', 'time.h', '-Wl,-llog', '-Wl,-lsync', '-fvisibility=default']
+          cpp_args = ['--sysroot=$SYSROOT', '-include', '$WORKDIR/mesa/src/util/u_gralloc/force_aosp_abi.h', '-D_LIBCPP_DISABLE_EXTERN_TEMPLATE', '-fno-emulated-tls', '-I$WORKDIR/mesa/shims/include', '-isystem$SYSROOT/usr/include', '-DHAVE_STRUCT_TIMESPEC', '-DHAVE_DLFCN_H', '-UHAVE_SECURE_GETENV', '-UHAVE_QSORT_S', '-include', 'fcntl.h', '-include', 'time.h', '-include', 'dlfcn.h', '-Wl,-llog', '-Wl,-lsync', '-fvisibility=default', '-D_LIBCPP_ABI_NAMESPACE=__1']
+          c_link_args = ['--sysroot=$SYSROOT', '-Wl,--allow-shlib-undefined', '-L$WORKDIR/mesa/shims', '-L$NDK_HOME/lib/clang/18/linux/aarch64', '-llog', '-lsync']
+          cpp_link_args = ['--sysroot=$SYSROOT', '-Wl,--allow-shlib-undefined', '-L$WORKDIR/mesa/shims', '-L$NDK_HOME/lib/clang/18/linux/aarch64', '-llog', '-lsync']
+
+          [properties]
+          sys_root = '$SYSROOT'
+          needs_exe_wrapper = true
+          pkg_config_libdir = '$WORKDIR/mesa/shims'
+
+          [host_machine]
+          system = 'android'
+          cpu_family = 'aarch64'
+          cpu = 'aarch64'
+          endian = 'little'
+          EOF
+
+      - name: Build Host tools (mesa-clc)
+        run: |
+          cd "$WORKDIR/mesa"
+          meson setup build-host \
+            -Dplatforms=[] \
+            -Dgallium-drivers=[] \
+            -Dvulkan-drivers=[] \
+            -Dtools=panfrost \
+            -Dprecomp-compiler=enabled \
+            -Dinstall-precomp-compiler=true \
+            -Dllvm=enabled \
+            -Dmesa-clc=enabled \
+            -Dinstall-mesa-clc=true
+                        
+          ninja -C build-host src/compiler/clc/mesa_clc src/compiler/spirv/vtn_bindgen2 src/panfrost/clc/panfrost_compile
+
+          ln -sf "build-host/src/compiler/clc/mesa_clc" "build-host/src/compiler/clc/mesa-clc"
+          ln -sf "build-host/src/compiler/spirv/vtn_bindgen2" "build-host/src/compiler/spirv/vtn-bindgen2"
+
+          echo "$WORKDIR/mesa/build-host/src/compiler/clc" >> $GITHUB_PATH
+          echo "$WORKDIR/mesa/build-host/src/compiler/spirv" >> $GITHUB_PATH
+          echo "$WORKDIR/mesa/build-host/src/panfrost/clc" >> $GITHUB_PATH
+
+      - name: Cross-compile PanVK for Android
+        run: |
+          cd "$WORKDIR/mesa"
+          meson setup build \
+            --cross-file android-aarch64.txt \
+            -Dbuildtype=release \
+            -Dstrip=true \
+            -Dplatforms="${{ matrix.platforms }}" \
+            -Dvideo-codecs=all \
+            -Dplatform-sdk-version="$API_VER" \
+            -Dandroid-stub=true \
+            -Dgallium-drivers= \
+            -Dvulkan-drivers=panfrost \
+            -Dvulkan-beta=true \
+            -Degl=disabled \
+            -Dandroid-strict=false \
+            -Dallow-fallback-for=libdrm \
+            -Dmesa-clc=system \
+            -Dprecomp-compiler=system \
+            -Dvalgrind=disabled \
+            -Dglx=disabled \
+            -Dgbm=disabled \
+            -Dglvnd=disabled \
+            -Dopengl=false \
+            -Dgles1=disabled \
+            -Dgles2=disabled \
+            -Dllvm=disabled
+
+          ninja -C build -j"$(nproc --all)"
+
+      - name: Package driver artifact
+        run: |
+          cd "$WORKDIR/mesa/build/src/panfrost/vulkan/"
+
+          patchelf --set-soname libvulkan_mali.so libvulkan_panfrost.so
+          mv libvulkan_panfrost.so libvulkan_mali.so
+
+          PLATFORM_TAG=$(echo "${{ matrix.platforms }}" | tr ',' '-')
+
+          cat <<EOF > meta.json
+          {
+            "schemaVersion": 1,
+            "name": "Mesa PanVK v$VERSION ($PLATFORM_TAG)",
+            "description": "Built from Leegao's mesa + custom mali_kbase patches",
+            "author": "JustCallMeJade",
+            "packageVersion": "1",
+            "vendor": "Mesa3D, Leegao",
+            "driverVersion": "Vulkan 1.4",
+            "minApi": 28,
+            "libraryName": "libvulkan_mali.so"
+          }
+          EOF
+
+          zip -9 "PanVK-v$VERSION-$PLATFORM_TAG.zip" libvulkan_mali.so meta.json
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PanVK-v${{ env.VERSION }}-${{ matrix.platforms }}
+          path: pan_workdir/mesa/build/src/panfrost/vulkan/*.zip
+          if-no-files-found: error
