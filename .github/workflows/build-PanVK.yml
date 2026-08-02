@@ -53,16 +53,7 @@ jobs:
           wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-beta2-linux.zip
           unzip -q android-ndk-r30-beta2-linux.zip
           rm android-ndk-r30-beta2-linux.zip
-          cd $WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot
-          wget2 https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/refs/heads/main/Extras/patch-fixer.py
-          for patch in 1.patch 2.patch 3.patch 4.patch 5.patch 6.patch 7.patch 8.patch 9.patch 10.patch 11.patch 12.patch 13.patch 14.patch 15.patch 16.patch 17.patch; do
-          wget2 https://raw.githubusercontent.com/JustCallMeJade/termux-packages/refs/heads/master/ndk-patches/29/"$patch"
-          python3 patch-fixer.py "$patch"
-          done
-          find . -type f -exec grep -Il '@TERMUX_PREFIX@' {} \; 2>/dev/null |
-          while IFS= read -r file; do
-          sed -i 's|@TERMUX_PREFIX@|/data/data/com.termux/files/usr|g' "$file" >/dev/null 2>&1
-          done
+
           echo "NDK=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_ENV
           echo "SYSROOT=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot" >> $GITHUB_ENV
           echo "NDK_HOME=$WORKDIR/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64" >> $GITHUB_ENV
@@ -95,7 +86,7 @@ jobs:
           sed -i 's/, hnd->handle/, (void \*)hnd->handle/g' src/util/u_gralloc/u_gralloc_fallback.c || true
           sed -i 's/native_buffer->handle->/((const native_handle_t \*)native_buffer->handle)->/g' src/vulkan/runtime/vk_android.c || true
           sed -i 's/#if defined(HAVE_MEMFD_CREATE) \&\& !defined __TERMUX__/#if defined(HAVE_MEMFD_CREATE)/' src/util/anon_file.c
-  
+
       - name: Generate Meson cross file
         run: |
           cd "$WORKDIR/mesa"
