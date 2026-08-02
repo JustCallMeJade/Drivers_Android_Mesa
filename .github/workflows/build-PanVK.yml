@@ -121,7 +121,9 @@ jobs:
           cpp = ['$NDK/aarch64-linux-android$API_VER-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
           strip = '$NDK/llvm-strip'
           pkg-config = '/usr/bin/pkg-config'
-
+          rust = 'rustc'
+          cargo = 'cargo'
+          
           [built-in options]
           c_args = ['--sysroot=$SYSROOT', '-fno-emulated-tls', '-I$WORKDIR/mesa/shims/include', '-isystem$SYSROOT/usr/include', '-DHAVE_STRUCT_TIMESPEC', '-DHAVE_DLFCN_H', '-UHAVE_SECURE_GETENV', '-UHAVE_QSORT_S', '-include', 'fcntl.h', '-include', 'time.h', '-Wl,-llog', '-Wl,-lsync', '-fvisibility=default']
           cpp_args = ['--sysroot=$SYSROOT', '-include', '$WORKDIR/mesa/src/util/u_gralloc/force_aosp_abi.h', '-D_LIBCPP_DISABLE_EXTERN_TEMPLATE', '-fno-emulated-tls', '-I$WORKDIR/mesa/shims/include', '-isystem$SYSROOT/usr/include', '-DHAVE_STRUCT_TIMESPEC', '-DHAVE_DLFCN_H', '-UHAVE_SECURE_GETENV', '-UHAVE_QSORT_S', '-include', 'fcntl.h', '-include', 'time.h', '-include', 'dlfcn.h', '-Wl,-llog', '-Wl,-lsync', '-fvisibility=default', '-D_LIBCPP_ABI_NAMESPACE=__1']
