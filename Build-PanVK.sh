@@ -36,7 +36,8 @@ sudo apt-get install -y \
               clang \
               llvm \
               llvm-dev &> /dev/null
-              
+sudo apt install -y rustc cargo &> /dev/null
+
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/pan"
 
@@ -55,6 +56,23 @@ git clone \
     "$mesasrc" mesa
     
 cd mesa
+
+rustup target add aarch64-linux-android
+
+mkdir -p .cargo
+
+cat > .cargo/config.toml <<EOF
+[target.aarch64-linux-android]
+linker = "$ndk/aarch64-linux-android36-clang"
+ar = "$ndk/llvm-ar"
+
+[env]
+CC_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang"
+CXX_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang++"
+EOF
+
+export CARGO_BUILD_TARGET=aarch64-linux-android
+export RUSTFLAGS="-Clinker=$ndk/aarch64-linux-android36-clang"
 
 unzip shims.zip -d ./
 
@@ -138,7 +156,8 @@ meson setup build \
     -Dopengl=false \
     -Dgles1=disabled \
     -Dgles2=disabled \
-    -Dllvm=disabled
+    -Dllvm=disabled \
+    -Dpanfrost-rust=true
 
 ninja -C build -j"$(nproc --all)"
 
