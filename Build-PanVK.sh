@@ -43,7 +43,9 @@ sudo apt-get install -y \
               flex \
               libdrm-dev \
               pkg-config \
-              clang &> /dev/null
+              clang \
+              llvm \
+              llvm-dev &> /dev/null
               
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/pan"
@@ -79,15 +81,6 @@ sed -i 's/typedef const native_handle_t\* buffer_handle_t;/typedef void\* buffer
 sed -i 's/, hnd->handle/, (void \*)hnd->handle/g' src/util/u_gralloc/u_gralloc_fallback.c || true
 sed -i 's/native_buffer->handle->/((const native_handle_t \*)native_buffer->handle)->/g' src/vulkan/runtime/vk_android.c || true
 sed -i 's/#if defined(HAVE_MEMFD_CREATE) \&\& !defined __TERMUX__/#if defined(HAVE_MEMFD_CREATE)/' src/util/anon_file.c
-
-export CC=clang
-export CXX=clang++
-export AR=llvm-ar
-export RANLIB=llvm-ranlib
-export STRIP=llvm-strip
-export OBJDUMP=llvm-objdump
-export OBJCOPY=llvm-objcopy
-export LDFLAGS="-fuse-ld=lld"
 
 cat <<EOF > android-aarch64.txt
 [binaries]
