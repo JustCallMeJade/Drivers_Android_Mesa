@@ -20,7 +20,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -40,7 +40,8 @@ jobs:
           sudo apt-get update -y > /dev/null 2>&1
           sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1 || true
           sudo apt-get build-dep libarchive -y -qq > /dev/null 2>&1 || true
-          
+          sudo apt-get install -y python3-pip --no-install-recommends
+          pip3 install meson setuptools mako pyyaml packaging --break-system-packages
           sudo apt-get install -y \
             git pkg-config cmake build-essential wget2 patchelf zip unzip meson ninja-build \
             llvm-20-dev libclang-20-dev libclc-20-dev libllvmspirvlib-20-dev \
