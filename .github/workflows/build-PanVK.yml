@@ -120,7 +120,7 @@ jobs:
           cpp = ['$NDK/aarch64-linux-android$API_VER-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
           strip = '$NDK/llvm-strip'
           pkg-config = '/usr/bin/pkg-config'
-          rust = ['rustc', '--target=aarch64-unknown-linux-android']
+          rust = ['rustc', '--target=aarch64-linux-android']
           cargo = 'cargo'
 
           [built-in options]
