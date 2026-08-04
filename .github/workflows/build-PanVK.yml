@@ -44,7 +44,7 @@ jobs:
             git pkg-config cmake build-essential wget2 patchelf zip unzip meson ninja-build \
             llvm-22-dev libclang-22-dev libclc-22-dev libllvmspirvlib-22-dev \
             libelf-dev spirv-tools bison flex libdrm-dev clang llvm llvm-dev > /dev/null 2>&1 || true
-
+          sudo apt-get install librust-syn-dev librust-paste-dev librust-rustc-hash-2-dev --install-suggests --install-recommends -y &> /dev/null || true
       - name: Setup Rust toolchain
         run: |
           export RUSTUP_HOME="$WORKDIR/rustup"
