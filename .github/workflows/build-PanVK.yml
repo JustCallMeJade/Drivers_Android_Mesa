@@ -15,7 +15,7 @@ env:
   API_VER: 36
   VERSION: "26.2.0-V1.0"
   WORKDIR: "${{ github.workspace }}/pan_workdir"
-  MESASRC: "https://github.com/leegao/mesa-26.2.git"
+  MESASRC: "https://github.com/JustCallMeJade/mesa-26.2.git"
 
 jobs:
   build:
