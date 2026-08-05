@@ -24,10 +24,10 @@ sudo apt install -y $deps > /dev/null 2>&1
 sudo apt install git pkg-config cmake patchelf build-essential wget2 zip # fallback when deps installation failed
 sudo apt-get install -y \
               build-essential \
-              llvm-20-dev \
-              libclang-20-dev \
-              libclc-20-dev \
-              libllvmspirvlib-20-dev \
+              llvm-22-dev \
+              libclang-22-dev \
+              libclc-22-dev \
+              libllvmspirvlib-22-dev \
               libelf-dev \
               spirv-tools \
               bison \
