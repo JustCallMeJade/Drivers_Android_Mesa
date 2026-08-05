@@ -10,7 +10,7 @@ VERSION="26.2.0-V1.0"
 ndk_home="$ndk/.."
 author="$(whoami)"
 DEBIAN_FRONTEND=noninteractive
-echo "Only works in Ubuntu x86_64!!! press Ctrl + C to exit"
+echo "Only works in Ubuntu/Debian based distros on X86_64!!! press Ctrl + C to exit"
 
 sleep 10
 
