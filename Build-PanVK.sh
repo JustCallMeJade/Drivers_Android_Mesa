@@ -20,7 +20,7 @@ echo "Installing build dependencies..."
 
 apt install sudo -y &> /dev/null || true # For root users, non root users will still run the script
 
-sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/ubuntu.sources || true
+sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/*.sources || true
 
 sudo apt-get update -y -qq
 sudo apt-get build-dep mesa -y -qq
