@@ -198,7 +198,7 @@ cd "$workdir"
 
 echo "packaging PanVK"
 
-cd "$workdir/mesa-vulkan-icd-panfrost/data/data/com.termux/files/usr/share/vulkan/icd.d/
+cd "$workdir/mesa-vulkan-icd-panfrost/data/data/com.termux/files/usr/share/vulkan/icd.d/"
 
 rm -f panfrost_icd.aarch64.json
 
