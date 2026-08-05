@@ -58,10 +58,11 @@ cat > ./DEBIAN/control << 'EOF'
 Package: mesa-vulkan-icd-panfrost
 Version: 26.20
 Architecture: arm64
-Maintainer: JustCallMeJade sdddxd86@gmail.com 2
+Maintainer: JustCallMeJade sdddxd86@gmail.com
 Section: libs
 Priority: optional
 Description: Mesa PanVK with leegao's kbase patches.
+Conflicts: mesa-vulkan-icd-freedreno
 EOF
 
 cd $workdir
