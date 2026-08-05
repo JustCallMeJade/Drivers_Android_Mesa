@@ -39,7 +39,7 @@ sudo apt-get install -y \
 sudo apt remove -y rustc cargo &> /dev/null || true
 
 mkdir -p "$workdir" && cd "$workdir"
-mkdir -p "$workdir/pan"
+mkdir -p "$workdir/output"
 
 rm -rf "$workdir/android-ndk-r30-beta2"
 rm -rf "$workdir/mesa"
@@ -149,7 +149,7 @@ meson setup build \
     --cross-file android-aarch64.txt \
     -Dbuildtype=release \
     -Dstrip=true \
-    -Dplatforms=android \
+    -Dplatforms=android,x11 \
     -Dvideo-codecs=all \
     -Dplatform-sdk-version=36 \
     -Dandroid-stub=true \
@@ -169,11 +169,12 @@ meson setup build \
     -Dgles1=disabled \
     -Dgles2=disabled \
     -Dllvm=disabled \
-    -Dpanfrost-rust=true
+    -Dpanfrost-rust=false \
+    --prefix "$workdir/output"
 
-ninja -C build -j"$(nproc --all)"
+ninja -C build -j"$(nproc --all)" install 
 
-cd "$workdir/mesa/build/src/panfrost/vulkan/"
+cd "$workdir/output/lib
 
 echo "packaging PanVK"
 
