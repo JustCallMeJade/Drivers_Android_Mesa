@@ -64,6 +64,8 @@ Priority: optional
 Description: Mesa PanVK with leegao's kbase patches.
 EOF
 
+cd $workdir
+
 export RUSTUP_HOME="$workdir/rustup"
 export CARGO_HOME="$workdir/cargo"
 export PATH="$CARGO_HOME/bin:$PATH"
