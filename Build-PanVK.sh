@@ -23,8 +23,8 @@ apt install sudo -y &> /dev/null || true # For root users, non root users will s
 sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/*.sources || true
 
 sudo apt-get update -y -qq
-sudo apt-get build-dep mesa -y -qq
-sudo apt install -y -qq $deps > /dev/null 2>&1
+sudo apt-get build-dep mesa -y -qq &> /dev/null
+sudo apt install -y -qq $deps
 sudo apt-get install -y -qq \
               build-essential \
               llvm-22-dev \
