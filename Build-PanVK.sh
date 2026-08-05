@@ -197,6 +197,23 @@ cd "$workdir"
 
 echo "packaging PanVK"
 
+cd "$workdir/mesa-vulkan-icd-panfrost/data/data/com.termux/files/usr/share/vulkan/icd.d/
+
+rm -f panfrost_icd.aarch64.json
+
+cat > panfrost_icd.aarch64.json <<'EOF'
+{
+    "ICD": {
+        "api_version": "1.4.354",
+        "library_arch": "64",
+        "library_path": "/data/data/com.termux/files/usr/lib/libvulkan_panfrost.so"
+    },
+    "file_format_version": "1.0.1"
+}
+EOF
+
+cd "$workdir"
+
 dpkg-deb --build $workdir/mesa-vulkan-icd-panfrost
 
 if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
