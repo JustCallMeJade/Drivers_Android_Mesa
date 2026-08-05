@@ -9,7 +9,7 @@ deps="git pkg-config cmake build-essential wget2 patchelf zip unzip"
 VERSION="26.2.0-V1.0"
 ndk_home="$ndk/.."
 author="$(whoami)"
-DEBIAN_FRONTEND=non-interactive
+DEBIAN_FRONTEND=noninteractive
 echo "Only works in Ubuntu x86_64!!! press Ctrl + C to exit"
 
 sleep 10
