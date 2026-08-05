@@ -8,6 +8,7 @@ mesasrc="https://github.com/leegao/mesa-26.2.git"
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip"
 VERSION="26.2.0-V1.0"
 ndk_home="$ndk/.."
+tmux="data/data/com.termux/files"
 
 echo "Only works in Ubuntu x86_64!!! press Ctrl + C to exit"
 echo "Installing build dependencies..."
@@ -39,13 +40,29 @@ sudo apt-get install -y \
 sudo apt remove -y rustc cargo &> /dev/null || true
 
 mkdir -p "$workdir" && cd "$workdir"
-mkdir -p "$workdir/output"
+mkdir -p "$workdir/mesa-vulkan-icd-panfrost"
 
 rm -rf "$workdir/android-ndk-r30-beta2"
 rm -rf "$workdir/mesa"
 rm -rf "$workdir/android-ndk-r30-beta2-linux.zip"
 
 cd "$workdir"
+
+cd "$workdir/mesa-vulkan-icd-panfrost"
+mkdir -p DEBIAN
+
+mkdir -p $tmux/usr/lib
+mkdir -p $tmux/usr/share/vulkan/icd.d
+
+cat > ./DEBIAN/control << 'EOF'
+Package: mesa-vulkan-icd-panfrost
+Version: 26.20
+Architecture: arm64
+Maintainer: JustCallMeJade sdddxd86@gmail.com 2
+Section: libs
+Priority: optional
+Description: Mesa PanVK with leegao's kbase patches.
+EOF
 
 export RUSTUP_HOME="$workdir/rustup"
 export CARGO_HOME="$workdir/cargo"
@@ -170,32 +187,15 @@ meson setup build \
     -Dgles2=disabled \
     -Dllvm=disabled \
     -Dpanfrost-rust=false \
-    --prefix "$workdir/output"
+    --prefix "$workdir/mesa-vulkan-icd-panfrost/$tmux/usr"
 
 ninja -C build -j"$(nproc --all)" install 
 
-cd "$workdir/output/lib
+cd "$workdir"
 
 echo "packaging PanVK"
 
-patchelf --set-soname libvulkan_mali.so libvulkan_panfrost.so
-mv libvulkan_panfrost.so libvulkan_mali.so
-
-cat <<EOF > meta.json
-{
-"schemaVersion": 1,
-"name": "Mesa PanVK v$VERSION",
-"description": "Built from Leegao's mesa + custom mali_kbase patches. Needs minimum android kernel 6.10",
-"author": "JustCallMeJade",
-"packageVersion": "1",
-"vendor": "Mesa3D, Leegao",
-"driverVersion": "Vulkan 1.4",
-"minApi": 36,
-"libraryName": "libvulkan_mali.so"
-}
-EOF
-
-zip -9 "$workdir/mesa/build/src/panfrost/vulkan/PanVK-v$VERSION.zip" libvulkan_mali.so meta.json
+dpkg-deb --build $workdir/mesa-vulkan-icd-panfrost
 
 if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
     echo "VERSION=$VERSION" >> "$GITHUB_ENV"
