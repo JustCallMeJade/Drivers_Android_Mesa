@@ -215,7 +215,13 @@ cat > panfrost_icd.aarch64.json <<'EOF'
 }
 EOF
 
-cd "$workdir"
+cd "$workdir/mesa-vulkan-icd-panfrost/$tmux/usr"
+
+rm -rf include
+
+rm -f ./lib/libexpat.so
+
+cd $workdir
 
 dpkg-deb --build --root-owner-group -Zxz $workdir/mesa-vulkan-icd-panfrost
 
