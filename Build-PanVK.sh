@@ -58,13 +58,10 @@ cat > ./DEBIAN/control << 'EOF'
 Package: mesa-vulkan-icd-panfrost
 Version: 26.2.0
 Architecture: aarch64
-Maintainer: JustCallMeJade <sdddxd86@gmail.com>
-Section: libs
+Maintainer: @JustCallMeJade
 Depends: vulkan-loader, mesa
 Suggests: vulkan-tools, vkmark, libx11, xfce4, xfce4-goodies
-Priority: optional
 Description: Mesa PanVK with leegao's kbase patches.
-Replaces: mesa-vulkan-icd-freedreno
 EOF
 
 cd $workdir
