@@ -217,7 +217,7 @@ EOF
 
 cd "$workdir"
 
-dpkg-deb --build $workdir/mesa-vulkan-icd-panfrost
+dpkg-deb --build --root-owner-group -Zxz $workdir/mesa-vulkan-icd-panfrost
 
 if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
     echo "VERSION=$VERSION" >> "$GITHUB_ENV"
