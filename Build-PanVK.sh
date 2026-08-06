@@ -64,9 +64,7 @@ git clone \
     
 cd mesa
 
-VK_API=$(grep -m1 -oP "(?<=--api-version', ')[0-9]+\.[0-9]+" src/panfrost/vulkan/meson.build)
-VK_PATCH=$(grep -m1 -oP '(?<=VK_HEADER_VERSION">)[0-9]+' src/vulkan/registry/vk.xml)
-VK_VERSION="$VK_API.$VK_PATCH"
+export VK_VERSION="1.4.353"
 
 unzip shims.zip -d ./ &> /dev/null
 
