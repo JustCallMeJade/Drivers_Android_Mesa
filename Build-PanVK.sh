@@ -8,27 +8,23 @@ mesasrc="https://github.com/leegao/mesa-26.2.git"
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip"
 VERSION="26.2.0-V1.0"
 ndk_home="$ndk/.."
-author="$(whoami)"
-DEBIAN_FRONTEND=noninteractive
 
-if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
-    export author="JustCallMeJade"
-fi
-
-echo "Only works in Ubuntu/Debian based distros on X86_64!!! press Ctrl + C to exit"
+echo "Only works in Ubuntu/Debian x86_64!!! press Ctrl + C to exit"
 
 sleep 10
 
 echo "Installing build dependencies..."
 
-apt install sudo -y &> /dev/null || true # For root users, non root users will still run the script
+apt install sudo -y &> /dev/null || true
 
 sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/*.sources || true
 
-sudo apt-get update -y -qq
-sudo apt-get build-dep mesa -y -qq &> /dev/null
-sudo apt install -y -qq $deps
-sudo apt-get install -y -qq \
+sudo apt-get update -y > /dev/null 2>&1
+sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1
+sudo apt-get build-dep libarchive -y -qq > /dev/null 2>&1
+sudo apt install -y $deps > /dev/null 2>&1
+sudo apt install git pkg-config cmake patchelf build-essential wget2 zip # fallback when deps installation failed
+sudo apt-get install -y \
               build-essential \
               llvm-22-dev \
               libclang-22-dev \
@@ -43,6 +39,8 @@ sudo apt-get install -y -qq \
               clang \
               llvm \
               llvm-dev &> /dev/null
+              
+sudo apt remove -y rustc cargo &> /dev/null || true
 
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/output"
@@ -52,6 +50,19 @@ rm -rf "$workdir/mesa"
 rm -rf "$workdir/android-ndk-r30-beta2-linux.zip"
 
 cd "$workdir"
+
+export RUSTUP_HOME="$workdir/rustup"
+export CARGO_HOME="$workdir/cargo"
+export PATH="$CARGO_HOME/bin:$PATH"
+export RUSTUP_HOME="$workdir/rustup"
+export CARGO_HOME="$workdir/cargo"
+export PATH="$CARGO_HOME/bin:$PATH"
+export CARGO_BUILD_TARGET=aarch64-linux-android
+export RUSTFLAGS="-Clinker=$ndk/aarch64-linux-android36-clang"
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+
+rustup target add aarch64-linux-android
 
 wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-beta2-linux.zip
 unzip android-ndk-r30-beta2-linux.zip &> /dev/null
@@ -64,9 +75,22 @@ git clone \
     
 cd mesa
 
-export VK_VERSION="1.4.353"
+mkdir -p .cargo
 
-unzip shims.zip -d ./ &> /dev/null
+cat > .cargo/config.toml <<EOF
+[target.aarch64-linux-android]
+linker = "$ndk/aarch64-linux-android36-clang"
+ar = "$ndk/llvm-ar"
+
+[env]
+CC_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang"
+CXX_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang++"
+EOF
+
+export CARGO_BUILD_TARGET=aarch64-linux-android
+export RUSTFLAGS="-Clinker=$ndk/aarch64-linux-android36-clang"
+
+unzip shims.zip -d ./
 
 git config user.name "PanVK-Builder"
 git config user.email "sdddxd86@gmail.com"
@@ -93,8 +117,8 @@ pkg-config = '/usr/bin/pkg-config'
 [built-in options]
 c_args = ['--sysroot=$sysroot', '-fno-emulated-tls', '-I$workdir/mesa/shims/include', '-isystem$sysroot/usr/include', '-DHAVE_STRUCT_TIMESPEC', '-DHAVE_DLFCN_H', '-UHAVE_SECURE_GETENV', '-UHAVE_QSORT_S', '-include', 'fcntl.h', '-include', 'time.h', '-Wl,-llog', '-Wl,-lsync', '-fvisibility=default']
 cpp_args = ['--sysroot=$sysroot', '-include', '$workdir/mesa/src/util/u_gralloc/force_aosp_abi.h', '-D_LIBCPP_DISABLE_EXTERN_TEMPLATE', '-fno-emulated-tls', '-I$workdir/mesa/shims/include', '-isystem$sysroot/usr/include', '-DHAVE_STRUCT_TIMESPEC', '-DHAVE_DLFCN_H', '-UHAVE_SECURE_GETENV', '-UHAVE_QSORT_S', '-include', 'fcntl.h', '-include', 'time.h', '-include', 'dlfcn.h', '-Wl,-llog', '-Wl,-lsync', '-fvisibility=default', '-D_LIBCPP_ABI_NAMESPACE=__1']
-c_link_args = ['--sysroot=$sysroot', '-Wl,--allow-shlib-undefined', '-L$workdir/mesa/shims', '-L$ndk_home/lib/clang/21/linux/aarch64', '-llog', '-lsync', '-Wl,-z,common-page-size=16834', '-Wl,-z,max-page-size=16384']
-cpp_link_args = ['--sysroot=$sysroot', '-Wl,--allow-shlib-undefined', '-L$workdir/mesa/shims', '-L$ndk_home/lib/clang/21/linux/aarch64', '-llog', '-lsync']
+c_link_args = ['--sysroot=$sysroot', '-Wl,--allow-shlib-undefined', '-L$workdir/mesa/shims', '-L$ndk_home/lib/clang/18/linux/aarch64', '-llog', '-lsync']
+cpp_link_args = ['--sysroot=$sysroot', '-Wl,--allow-shlib-undefined', '-L$workdir/mesa/shims', '-L$ndk_home/lib/clang/18/linux/aarch64', '-llog', '-lsync']
 
 [properties]
 sys_root = '$sysroot'
@@ -125,11 +149,14 @@ ln -sf "build-host/src/compiler/spirv/vtn_bindgen2" "build-host/src/compiler/spi
 
 export PATH="$workdir/mesa/build-host/src/compiler/clc:$workdir/mesa/build-host/src/compiler/spirv:$workdir/mesa/build-host/src/panfrost/clc:$PATH"
 
+export CC="$ndk/aarch64-linux-android36-clang"
+export CXX="$ndk/aarch64-linux-android36-clang++"
+
 meson setup build \
     --cross-file android-aarch64.txt \
     -Dbuildtype=release \
     -Dstrip=true \
-    -Dplatforms=android \
+    -Dplatforms=android,x11 \
     -Dvideo-codecs=all \
     -Dplatform-sdk-version=36 \
     -Dandroid-stub=true \
@@ -149,7 +176,7 @@ meson setup build \
     -Dgles1=disabled \
     -Dgles2=disabled \
     -Dllvm=disabled \
-    -Dpanfrost-rust=false \
+    -Dpanfrost-rust=true \
     --prefix "$workdir/output"
 
 ninja -C build -j"$(nproc --all)" install 
@@ -165,17 +192,21 @@ cat <<EOF > meta.json
 {
 "schemaVersion": 1,
 "name": "Mesa PanVK v$VERSION",
-"description": "custom mali_kbase patches Needs minimum android 16 or Android linux kernel 6.10",
-"author": "$author",
-"packageVersion": "26.2.0",
+"description": "Built from Leegao's mesa + custom mali_kbase patches. Needs minimum android kernel 6.10",
+"author": "JustCallMeJade",
+"packageVersion": "1",
 "vendor": "Mesa3D, Leegao",
-"driverVersion": "$VK_VERSION",
+"driverVersion": "Vulkan 1.4",
 "minApi": 36,
 "libraryName": "libvulkan_mali.so"
 }
 EOF
 
 zip -9 PanVK-v$VERSION.zip libvulkan_mali.so meta.json
+
+if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+    echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+fi
 
 echo "build complete."
 
