@@ -192,7 +192,7 @@ cat <<EOF > meta.json
 {
 "schemaVersion": 1,
 "name": "Mesa PanVK v$VERSION",
-"description": "Built from Leegao's mesa + custom mali_kbase patches. Needs minimum android kernel 6.10",
+"description": "Built from Leegao's mesa + custom mali_kbase patches",
 "author": "JustCallMeJade",
 "packageVersion": "1",
 "vendor": "Mesa3D, Leegao",
