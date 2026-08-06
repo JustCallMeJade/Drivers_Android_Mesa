@@ -10,6 +10,11 @@ VERSION="26.2.0-V1.0"
 ndk_home="$ndk/.."
 author="$(whoami)"
 DEBIAN_FRONTEND=noninteractive
+
+if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+    export author="JustCallMeJade"
+fi
+
 echo "Only works in Ubuntu/Debian based distros on X86_64!!! press Ctrl + C to exit"
 
 sleep 10
@@ -172,9 +177,7 @@ EOF
 
 zip -9 PanVK-v$VERSION.zip libvulkan_mali.so meta.json
 
-if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
-    echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-fi
+
 
 echo "build complete."
 
