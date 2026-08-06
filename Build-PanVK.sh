@@ -19,8 +19,6 @@ echo "Only works in Ubuntu/Debian based distros on X86_64!!! press Ctrl + C to e
 
 sleep 10
 
-clear
-
 echo "Installing build dependencies..."
 
 apt install sudo -y &> /dev/null || true # For root users, non root users will still run the script
