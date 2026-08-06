@@ -197,7 +197,7 @@ cat <<EOF > meta.json
 "packageVersion": "1",
 "vendor": "Mesa3D, Leegao",
 "driverVersion": "Vulkan 1.4",
-"minApi": 36,
+"minApi": 30,
 "libraryName": "libvulkan_mali.so"
 }
 EOF
