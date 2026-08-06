@@ -66,6 +66,10 @@ git clone \
     
 cd mesa
 
+VK_API=$(grep -m1 -oP "(?<=--api-version', ')[0-9]+\.[0-9]+" src/panfrost/vulkan/meson.build)
+VK_PATCH=$(grep -m1 -oP '(?<=VK_HEADER_VERSION">)[0-9]+' src/vulkan/registry/vk.xml)
+VK_VERSION="$VK_API.$VK_PATCH"
+
 unzip shims.zip -d ./ &> /dev/null
 
 git config user.name "PanVK-Builder"
@@ -169,7 +173,7 @@ cat <<EOF > meta.json
 "author": "$author",
 "packageVersion": "26.2.0",
 "vendor": "Mesa3D, Leegao",
-"driverVersion": "Vulkan 1.4",
+"driverVersion": "$VK_VERSION",
 "minApi": 36,
 "libraryName": "libvulkan_mali.so"
 }
