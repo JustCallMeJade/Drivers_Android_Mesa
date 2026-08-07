@@ -4,7 +4,7 @@ set -oe pipefail
 workdir="$(pwd)/pan_workdir"
 ndk="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
-mesasrc="https://github.com/leegao/mesa-26.2.git"
+mesasrc="https://github.com/JustCallMeJade/mesa-26.2.git"
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip curl"
 VERSION="26.2.0-V1.0"
 ndk_home="$ndk/.."
