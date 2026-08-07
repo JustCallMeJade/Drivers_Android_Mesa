@@ -159,7 +159,7 @@ meson setup build \
     --cross-file android-aarch64.txt \
     -Dbuildtype=release \
     -Dstrip=true \
-    -Dplatforms=android,x11 \
+    -Dplatforms=android \
     -Dvideo-codecs=all \
     -Dplatform-sdk-version=36 \
     -Dandroid-stub=true \
