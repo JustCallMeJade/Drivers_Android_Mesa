@@ -113,7 +113,7 @@ c = ['$ndk/aarch64-linux-android36-clang', '-D__TERMUX__']
 cpp = ['$ndk/aarch64-linux-android36-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
 strip = '$ndk/llvm-strip'
 pkg-config = '/usr/bin/pkg-config'
-rust = 'rustc'
+rustc = ['rustc', '--target=aarch64-linux-android']
 cargo = 'cargo'
 
 [built-in options]
@@ -126,6 +126,7 @@ cpp_link_args = ['--sysroot=$sysroot', '-Wl,--allow-shlib-undefined', '-L$workdi
 sys_root = '$sysroot'
 needs_exe_wrapper = true
 pkg_config_libdir = '$workdir/mesa/shims'
+bindgen_clang_properties = '--sysroot=$sysroot'
 
 [host_machine]
 system = 'android'
