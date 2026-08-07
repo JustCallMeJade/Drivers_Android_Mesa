@@ -126,7 +126,7 @@ cpp_link_args = ['--sysroot=$sysroot', '-Wl,--allow-shlib-undefined', '-L$workdi
 [properties]
 sys_root = '$sysroot'
 needs_exe_wrapper = true
-pkg_config_path = '$workdir/mesa/shims'
+pkg_config_libdir = '$workdir/mesa/shims'
 bindgen_clang_properties = '--sysroot=$sysroot'
 
 [host_machine]
