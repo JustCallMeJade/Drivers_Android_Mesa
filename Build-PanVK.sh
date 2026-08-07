@@ -26,10 +26,10 @@ sudo apt install -y $deps > /dev/null 2>&1
 sudo apt install git pkg-config cmake patchelf build-essential wget2 zip # fallback when deps installation failed
 sudo apt-get install -y \
               build-essential \
-              llvm-22-dev \
-              libclang-22-dev \
-              libclc-22-dev \
-              libllvmspirvlib-22-dev \
+              llvm-21-dev \
+              libclang-21-dev \
+              libclc-21-dev \
+              libllvmspirvlib-21-dev \
               libelf-dev \
               spirv-tools \
               bison \
@@ -57,8 +57,6 @@ export PATH="$CARGO_HOME/bin:$PATH"
 export RUSTUP_HOME="$workdir/rustup"
 export CARGO_HOME="$workdir/cargo"
 export PATH="$CARGO_HOME/bin:$PATH"
-export CARGO_BUILD_TARGET=aarch64-linux-android
-export RUSTFLAGS="-Clinker=$ndk/ld.lld"
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
@@ -79,17 +77,13 @@ mkdir -p .cargo
 
 cat > .cargo/config.toml <<EOF
 [target.aarch64-linux-android]
-linker = "$ndk/ld.lld"
+linker = "$ndk/aarch64-linux-android36-clang"
 ar = "$ndk/llvm-ar"
-strip = "$ndk/llvm-strip"
 
 [env]
 CC_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang"
 CXX_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang++"
 EOF
-
-export CARGO_BUILD_TARGET=aarch64-linux-android
-export RUSTFLAGS="-Clinker=$ndk/ld.lld"
 
 unzip shims.zip -d ./
 
@@ -114,7 +108,7 @@ c = ['$ndk/aarch64-linux-android36-clang', '-D__TERMUX__']
 cpp = ['$ndk/aarch64-linux-android36-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
 strip = '$ndk/llvm-strip'
 pkg-config = '/usr/bin/pkg-config'
-rust = ['rustc', '--target=aarch64-linux-android']
+rust = 'rustc'
 cargo = 'cargo'
 
 [built-in options]
@@ -135,6 +129,10 @@ cpu_family = 'aarch64'
 cpu = 'aarch64'
 endian = 'little'
 EOF
+
+export LIBCLANG_PATH=/usr/lib/llvm-21/lib
+export CC=clang-21
+export CXX=clang++-21
 
 meson setup build-host \
               -Dplatforms=[] \
