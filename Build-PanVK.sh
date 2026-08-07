@@ -26,19 +26,17 @@ sudo apt install -y $deps > /dev/null 2>&1
 sudo apt install git pkg-config cmake patchelf build-essential wget2 zip # fallback when deps installation failed
 sudo apt-get install -y \
               build-essential \
-              llvm-21-dev \
-              libclang-21-dev \
+              llvm-22-dev \
+              libclang-22-dev \
               libclc-21-dev \
-              libllvmspirvlib-21-dev \
+              clang-22 \
+              libllvmspirvlib-22-dev \
               libelf-dev \
               spirv-tools \
               bison \
               flex \
               libdrm-dev \
-              pkg-config \
-              clang \
-              llvm \
-              llvm-dev &> /dev/null
+              pkg-config &> /dev/null
               
 sudo apt remove -y rustc cargo &> /dev/null || true
 
@@ -130,9 +128,9 @@ cpu = 'aarch64'
 endian = 'little'
 EOF
 
-export LIBCLANG_PATH=/usr/lib/llvm-21/lib
-export CC=clang-21
-export CXX=clang++-21
+export LIBCLANG_PATH=/usr/lib/llvm-22/lib
+export CC=clang-22
+export CXX=clang++-22
 
 meson setup build-host \
               -Dplatforms=[] \
