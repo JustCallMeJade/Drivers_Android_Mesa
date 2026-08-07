@@ -113,6 +113,8 @@ c = ['$ndk/aarch64-linux-android36-clang', '-D__TERMUX__']
 cpp = ['$ndk/aarch64-linux-android36-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
 strip = '$ndk/llvm-strip'
 pkg-config = '/usr/bin/pkg-config'
+rust = 'rustc'
+cargo = 'cargo'
 
 [built-in options]
 c_args = ['--sysroot=$sysroot', '-fno-emulated-tls', '-I$workdir/mesa/shims/include', '-isystem$sysroot/usr/include', '-DHAVE_STRUCT_TIMESPEC', '-DHAVE_DLFCN_H', '-UHAVE_SECURE_GETENV', '-UHAVE_QSORT_S', '-include', 'fcntl.h', '-include', 'time.h', '-Wl,-llog', '-Wl,-lsync', '-fvisibility=default']
