@@ -31,5 +31,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: turnip-build
-          path: pan_workdir/output/*.zip
+          path: pan_workdir/output/lib/*.zip
           if-no-files-found: error
