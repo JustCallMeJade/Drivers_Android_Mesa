@@ -108,7 +108,7 @@ c = ['$ndk/aarch64-linux-android36-clang', '-D__TERMUX__']
 cpp = ['$ndk/aarch64-linux-android36-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
 strip = '$ndk/llvm-strip'
 pkg-config = '/usr/bin/pkg-config'
-rust = 'rustc'
+rust = ['rustc', '--target=aarch64-linux-android']
 cargo = 'cargo'
 
 [built-in options]
