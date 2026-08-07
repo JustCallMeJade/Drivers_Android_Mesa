@@ -58,7 +58,7 @@ export RUSTUP_HOME="$workdir/rustup"
 export CARGO_HOME="$workdir/cargo"
 export PATH="$CARGO_HOME/bin:$PATH"
 export CARGO_BUILD_TARGET=aarch64-linux-android
-export RUSTFLAGS="-Clinker=$ndk/aarch64-linux-android36-clang"
+export RUSTFLAGS="-Clinker=$ndk/ld.lld"
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
@@ -79,7 +79,7 @@ mkdir -p .cargo
 
 cat > .cargo/config.toml <<EOF
 [target.aarch64-linux-android]
-linker = "$ndk/aarch64-linux-android36-clang"
+linker = "$ndk/ld.lld"
 ar = "$ndk/llvm-ar"
 strip = "$ndk/llvm-strip"
 
@@ -89,7 +89,7 @@ CXX_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang++"
 EOF
 
 export CARGO_BUILD_TARGET=aarch64-linux-android
-export RUSTFLAGS="-Clinker=$ndk/aarch64-linux-android36-clang"
+export RUSTFLAGS="-Clinker=$ndk/ld.lld"
 
 unzip shims.zip -d ./
 
@@ -196,7 +196,7 @@ cat <<EOF > meta.json
 {
 "schemaVersion": 1,
 "name": "Mesa PanVK v$VERSION",
-"description": "Built from Leegao's mesa + custom mali_kbase patches",
+"description": "Custom mali_kbase patches with Leegao's mesa. See supported GPUs here: [https://docs.mesa3d.org/drivers/panfrost.html].",
 "author": "JustCallMeJade",
 "packageVersion": "1",
 "vendor": "Mesa3D, Leegao",
