@@ -81,6 +81,7 @@ cat > .cargo/config.toml <<EOF
 [target.aarch64-linux-android]
 linker = "$ndk/aarch64-linux-android36-clang"
 ar = "$ndk/llvm-ar"
+strip = "$ndk/llvm-strip"
 
 [env]
 CC_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang"
@@ -125,7 +126,7 @@ cpp_link_args = ['--sysroot=$sysroot', '-Wl,--allow-shlib-undefined', '-L$workdi
 [properties]
 sys_root = '$sysroot'
 needs_exe_wrapper = true
-pkg_config_libdir = '$workdir/mesa/shims'
+pkg_config_path = '$workdir/mesa/shims'
 bindgen_clang_properties = '--sysroot=$sysroot'
 
 [host_machine]
