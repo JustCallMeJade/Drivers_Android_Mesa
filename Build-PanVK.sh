@@ -230,9 +230,24 @@ mv ../android-aarch64.txt .
 meson setup build \
 --cross-file android-aarch64.txt \
 -Dbuildtype=release \
---prefix "$workdir/output"
+--prefix "$workdir/output" \
+-Dexynos=enabled \
+-Dtests=disabled \
+-Damdgpu=disabled \
+-Dnouveau=disabled \
+-Dintel=disabled \
+-Dradeon=disabled \
+-Dtegra=disabled \
+-Detnaviv=disabled \
+-Dfreedreno=disabled \
+-Dvc4=disabled \
+-Darmada=disabled \
+-Domap=disabled \
+-Dvmwgfx=disabled
 
-ninja -C build install
+ninja -C build
+
+ninja -C build install &> /dev/null
 
 cd "$workdir/output/lib"
 
