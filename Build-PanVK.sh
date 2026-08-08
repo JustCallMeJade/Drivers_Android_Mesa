@@ -232,7 +232,6 @@ meson setup build \
 -Dbuildtype=release \
 --prefix "$workdir/output" \
 -Dexynos=enabled \
--Dtests=disabled \
 -Damdgpu=disabled \
 -Dnouveau=disabled \
 -Dintel=disabled \
