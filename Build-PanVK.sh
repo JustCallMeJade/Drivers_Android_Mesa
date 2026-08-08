@@ -238,9 +238,7 @@ meson setup build \
 -Dradeon=disabled \
 -Dtegra=disabled \
 -Detnaviv=disabled \
--Dfreedreno=disabled \
 -Dvc4=disabled \
--Darmada=disabled \
 -Domap=disabled \
 -Dvmwgfx=disabled
 
