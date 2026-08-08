@@ -4,7 +4,7 @@ set -oe pipefail
 workdir="$(pwd)/pan_workdir"
 ndk="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
-mesasrc="https://github.com/JustCallMeJade/mesa-26.2.git"
+mesasrc="https://github.com/JustCallMeJade/mesa-26.2.git" # Leegao's mesa, my own fork instead with some fixes
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip curl"
 VERSION="26.2.0-V1.0"
 ndk_home="$ndk/.."
@@ -31,7 +31,7 @@ sudo apt-get install -y \
               libllvm22 \
               libclang-22-dev \
               clang-22 \
-              libclc-21-dev \
+              libclc-22-dev \
               libllvmspirvlib-22-dev \
               libelf-dev \
               spirv-tools \
