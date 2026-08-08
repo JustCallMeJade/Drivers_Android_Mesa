@@ -19,11 +19,10 @@ apt install sudo -y &> /dev/null || true
 
 sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/*.sources || true
 
-sudo apt-get update -y > /dev/null 2>&1
-sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1
-sudo apt-get build-dep libarchive -y -qq > /dev/null 2>&1
-sudo apt install -y $deps > /dev/null 2>&1
-sudo apt install git pkg-config cmake patchelf build-essential wget2 zip # fallback when deps installation failed
+sudo apt-get update -y > /dev/null 2>&1 || true
+sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1 || true
+sudo apt-get build-dep libarchive -y -qq > /dev/null 2>&1 || true
+sudo apt install -y $deps > /dev/null 2>&1 || true
 
 sudo apt-get install -y \
               build-essential \
@@ -40,7 +39,7 @@ sudo apt-get install -y \
               flex \
               libdrm-dev \
               pkg-config \
-              bindgen &> /dev/null
+              bindgen &> /dev/null || true
 
 sudo apt remove -y rustc cargo &> /dev/null || true
 
@@ -100,10 +99,6 @@ sed -i 's/, hnd->handle/, (void \*)hnd->handle/g' src/util/u_gralloc/u_gralloc_f
 sed -i 's/native_buffer->handle->/((const native_handle_t \*)native_buffer->handle)->/g' src/vulkan/runtime/vk_android.c || true
 sed -i 's/#if defined(HAVE_MEMFD_CREATE) \&\& !defined __TERMUX__/#if defined(HAVE_MEMFD_CREATE)/' src/util/anon_file.c
 
-# ============================================================
-# LLVM 22 HOST TOOLCHAIN
-# ============================================================
-
 export LLVM_CONFIG=llvm-config-22
 export LIBCLANG_PATH=/usr/lib/llvm-22/lib
 export LD_LIBRARY_PATH="/usr/lib/llvm-22/lib:${LD_LIBRARY_PATH:-}"
@@ -111,11 +106,8 @@ export LD_LIBRARY_PATH="/usr/lib/llvm-22/lib:${LD_LIBRARY_PATH:-}"
 export CC=clang-22
 export CXX=clang++-22
 
-# Force bindgen to use LLVM 22's clang/libclang.
 export BINDGEN_CLANG_PATH=/usr/bin/clang-22
 
-# Bindgen must parse the target as Android AArch64 rather than
-# accidentally treating it as the host x86_64 architecture.
 export BINDGEN_EXTRA_CLANG_ARGS="--target=aarch64-linux-android36 --sysroot=$sysroot"
 
 cat > android-aarch64.txt <<EOF
@@ -147,10 +139,6 @@ cpu = 'aarch64'
 endian = 'little'
 EOF
 
-# ============================================================
-# BUILD HOST TOOLS WITH LLVM 22
-# ============================================================
-
 export CC=clang-22
 export CXX=clang++-22
 export LLVM_CONFIG=llvm-config-22
@@ -176,14 +164,10 @@ ln -sf "build-host/src/compiler/spirv/vtn_bindgen2" "build-host/src/compiler/spi
 
 export PATH="$workdir/mesa/build-host/src/compiler/clc:$workdir/mesa/build-host/src/compiler/spirv:$workdir/mesa/build-host/src/panfrost/clc:$PATH"
 
-# ============================================================
-# ANDROID TARGET TOOLCHAIN
-# ============================================================
 
 export CC="$ndk/aarch64-linux-android36-clang"
 export CXX="$ndk/aarch64-linux-android36-clang++"
 
-# Keep LLVM 22 for bindgen/libclang.
 export LLVM_CONFIG=llvm-config-22
 export LIBCLANG_PATH=/usr/lib/llvm-22/lib
 export LD_LIBRARY_PATH="/usr/lib/llvm-22/lib:${LD_LIBRARY_PATH:-}"
@@ -250,8 +234,8 @@ cd "$workdir/output/lib"
 
 echo "packaging PanVK"
 
-patchelf --set-soname libvulkan_mali.so libvulkan_panfrost.so
-mv libvulkan_panfrost.so libvulkan_mali.so
+patchelf --set-soname vulkan.mali.so libvulkan_panfrost.so
+mv libvulkan_panfrost.so vulkan.mali.so
 
 cat <<EOF > meta.json
 {
@@ -263,11 +247,11 @@ cat <<EOF > meta.json
 "vendor": "Mesa3D, Leegao",
 "driverVersion": "Vulkan 1.4",
 "minApi": 30,
-"libraryName": "libvulkan_mali.so"
+"libraryName": "vulkan.mali.so"
 }
 EOF
 
-zip -9 PanVK-v$VERSION.zip libvulkan_mali.so meta.json libdrm.so
+zip -9 PanVK-v$VERSION.zip vulkan.mali.so meta.json libdrm.so
 
 if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
     echo "VERSION=$VERSION" >> "$GITHUB_ENV"
