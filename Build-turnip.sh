@@ -4,7 +4,7 @@ workdir="$(pwd)/turnip_workdir"
 ndk="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/bin" #yes r29 is the directory
 sysroot="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 mesasrc="https://gitlab.freedesktop.org/mesa/mesa.git"
-BUILD_VERSION="26.20-devel"
+BUILD_VERSION="26.3.0-devel"
 echo "Only works in debian Arm64!!! press Ctrl + C to exit"
 echo "Installing build dependencies..."
 
