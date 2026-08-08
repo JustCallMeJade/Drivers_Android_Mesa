@@ -219,6 +219,21 @@ meson setup build \
 
 ninja -C build -j"$(nproc --all)" install 
 
+git clone --depth 1 https://gitlab.freedesktop.org/mesa/libdrm
+
+cd libdrm
+
+export CFLAGS="-DANDROID"
+
+mv ../android-aarch64.txt .
+
+meson setup build \
+--cross-file android-aarch64.txt \
+-Dbuildtype=release \
+--prefix "$workdir/output"
+
+ninja -C build install
+
 cd "$workdir/output/lib"
 
 echo "packaging PanVK"
@@ -240,7 +255,7 @@ cat <<EOF > meta.json
 }
 EOF
 
-zip -9 PanVK-v$VERSION.zip libvulkan_mali.so meta.json
+zip -9 PanVK-v$VERSION.zip libvulkan_mali.so meta.json libdrm.so
 
 if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
     echo "VERSION=$VERSION" >> "$GITHUB_ENV"
