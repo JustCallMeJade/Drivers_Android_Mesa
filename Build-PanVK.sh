@@ -56,12 +56,16 @@ export RUSTUP_HOME="$workdir/rustup"
 export CARGO_HOME="$workdir/cargo"
 export PATH="$CARGO_HOME/bin:$PATH"
 
+echo "Setting up NDK and Rust toolchains"
+
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 rustup target add aarch64-linux-android
 
 wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-beta2-linux.zip
 unzip android-ndk-r30-beta2-linux.zip &> /dev/null
+
+echo "Cloning mesa."
 
 git clone \
     --depth=1 \
@@ -70,6 +74,8 @@ git clone \
     "$mesasrc" mesa
 
 cd mesa
+
+echo "Setting up crossfiles"
 
 mkdir -p .cargo
 
@@ -111,8 +117,8 @@ export BINDGEN_EXTRA_CLANG_ARGS="--target=aarch64-linux-android36 --sysroot=$sys
 cat > android-aarch64.txt <<EOF
 [binaries]
 ar = '$ndk/llvm-ar'
-c = ['$ndk/aarch64-linux-android36-clang', '-D__TERMUX__']
-cpp = ['$ndk/aarch64-linux-android36-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
+c = ['ccache', '$ndk/aarch64-linux-android36-clang', '-D__TERMUX__']
+cpp = ['ccache', '$ndk/aarch64-linux-android36-clang++', '-fno-exceptions', '--start-no-unused-arguments', '--end-no-unused-arguments', '-D__TERMUX__']
 strip = '$ndk/llvm-strip'
 pkg-config = '/usr/bin/pkg-config'
 rust = ['rustc', '--target=aarch64-linux-android']
@@ -145,6 +151,8 @@ export LD_LIBRARY_PATH="/usr/lib/llvm-22/lib:${LD_LIBRARY_PATH:-}"
 export BINDGEN_CLANG_PATH=/usr/bin/clang-22
 export BINDGEN_EXTRA_CLANG_ARGS="--target=aarch64-linux-android36 --sysroot=$sysroot"
 
+echo "Compiling essential build tools"
+
 meson setup build-host \
               -Dplatforms=[] \
               -Dgallium-drivers=[] \
@@ -155,7 +163,7 @@ meson setup build-host \
               -Dllvm=enabled \
               -Dmesa-clc=enabled -Dinstall-mesa-clc=true
 
-ninja -C build-host src/compiler/clc/mesa_clc src/compiler/spirv/vtn_bindgen2 src/panfrost/clc/panfrost_compile
+ninja -C build-host src/compiler/clc/mesa_clc src/compiler/spirv/vtn_bindgen2 src/panfrost/clc/panfrost_compile > /dev/null
 
 ln -sf "build-host/src/compiler/clc/mesa_clc" "build-host/src/compiler/clc/mesa-clc"
 ln -sf "build-host/src/compiler/spirv/vtn_bindgen2" "build-host/src/compiler/spirv/vtn-bindgen2"
@@ -171,6 +179,8 @@ export LIBCLANG_PATH=/usr/lib/llvm-22/lib
 export LD_LIBRARY_PATH="/usr/lib/llvm-22/lib:${LD_LIBRARY_PATH:-}"
 export BINDGEN_CLANG_PATH=/usr/bin/clang-22
 export BINDGEN_EXTRA_CLANG_ARGS="--target=aarch64-linux-android36 --sysroot=$sysroot"
+
+echo "Compiling PanVK for android.."
 
 meson setup build \
     --cross-file android-aarch64.txt \
@@ -200,6 +210,8 @@ meson setup build \
     --prefix "$workdir/output"
 
 ninja -C build -j"$(nproc --all)" install 
+
+echo "Building libdrm for DT_NEEDED"
 
 git clone --depth 1 https://gitlab.freedesktop.org/mesa/libdrm
 
@@ -256,6 +268,4 @@ if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
     echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 fi
 
-echo "build complete."
-
-exit 0
+echo "Build complete."
