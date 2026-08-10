@@ -19,7 +19,8 @@ echo "Installing build dependencies..."
 
 apt install sudo -y &> /dev/null || true
 
-sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/*.sources || true
+sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/debian.sources || sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/ubuntu.sources
+
 
 sudo apt-get update -y > /dev/null 2>&1 || true
 sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1 || true
