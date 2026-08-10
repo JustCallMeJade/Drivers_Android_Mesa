@@ -13,6 +13,8 @@ echo -e "\e[36mWarning:\e[0m Only works in Ubuntu/Debian x86_64!!! You may exit 
 
 sleep 10
 
+echo "Continuing ✓"
+
 echo "Installing build dependencies..."
 
 apt install sudo -y &> /dev/null || true
