@@ -128,7 +128,7 @@ cpp_link_args = ['--sysroot=$sysroot', '-Wl,--allow-shlib-undefined', '-L$workdi
 sys_root = '$sysroot'
 needs_exe_wrapper = true
 pkg_config_libdir = '$workdir/mesa/shims'
-bindgen_clang_properties = '--sysroot=$sysroot'
+bindgen_clang_properties = ['--sysroot=$sysroot', '--target=aarch64-linux-android36']
 
 [host_machine]
 system = 'android'
@@ -205,13 +205,13 @@ git clone --depth 1 https://gitlab.freedesktop.org/mesa/libdrm
 
 cd libdrm
 
-export CFLAGS="-DANDROID"
+export CFLAGS="-DANDROID -D__ANDROID__"
 
 mv ../android-aarch64.txt .
 
 meson setup build \
 --cross-file android-aarch64.txt \
--Dbuildtype=release \
+-Dbuildtype=debugoptimized \
 --prefix "$workdir/output" \
 -Dexynos=enabled \
 -Damdgpu=disabled \
@@ -222,7 +222,8 @@ meson setup build \
 -Detnaviv=disabled \
 -Dvc4=disabled \
 -Domap=disabled \
--Dvmwgfx=disabled
+-Dvmwgfx=disabled \
+-Dstrip=true
 
 ninja -C build
 
