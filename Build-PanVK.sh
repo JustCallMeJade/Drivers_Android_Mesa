@@ -188,7 +188,6 @@ echo "Compiling PanVK for android.."
 meson setup build \
     --cross-file android-aarch64.txt \
     -Dbuildtype=debug \
-    -Dstrip=true \
     -Dplatforms=android \
     -Dvideo-codecs=all \
     -Dplatform-sdk-version=36 \
