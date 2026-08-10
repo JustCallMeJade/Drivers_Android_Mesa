@@ -37,7 +37,6 @@
  ## Changelogs
 
  - **Updated to upstream Mesa**
- - **Merged https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/43169**
  ## Thank you ♥
 
 - **Vauzi-17**
