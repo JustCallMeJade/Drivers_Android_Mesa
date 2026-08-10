@@ -240,7 +240,7 @@ cat <<EOF > meta.json
 {
 "schemaVersion": 1,
 "name": "Mesa PanVK v$VERSION",
-"description": "Custom mali_kbase patches with Leegao's mesa. See supported GPUs here: [https://docs.mesa3d.org/drivers/panfrost.html].",
+"description": "Built with Leegao's mesa. export PAN_I_WANT_A_BROKEN_DRIVER=1 if you're in winlator or termux. See supported GPUs here: [https://docs.mesa3d.org/drivers/panfrost.html].",
 "author": "JustCallMeJade",
 "packageVersion": "1",
 "vendor": "Mesa3D, Leegao",
