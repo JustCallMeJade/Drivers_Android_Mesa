@@ -9,7 +9,7 @@ deps="git pkg-config cmake build-essential wget2 patchelf zip unzip curl"
 VERSION="26.3.0-V1.0"
 ndk_home="$ndk/.."
 
-echo "Only works in Ubuntu/Debian x86_64!!! press Ctrl + C to exit"
+echo -e "\e[36mWarning:\e[0m Only works in Ubuntu/Debian x86_64!!! Press Ctrl + C to exit"
 
 sleep 10
 
