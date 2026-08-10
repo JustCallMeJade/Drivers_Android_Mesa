@@ -4,9 +4,9 @@ set -oe pipefail
 workdir="$(pwd)/pan_workdir"
 ndk="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
-mesasrc="https://github.com/JustCallMeJade/mesa-26.2.git" # Leegao's mesa, my own fork instead with some fixes
+mesasrc="https://github.com/leegao/mesa-funnymdzz.git" # Leegao's mesa
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip curl"
-VERSION="26.2.0-V1.0"
+VERSION="26.3.0-V1.0"
 ndk_home="$ndk/.."
 
 echo "Only works in Ubuntu/Debian x86_64!!! press Ctrl + C to exit"
@@ -66,7 +66,7 @@ unzip android-ndk-r30-beta2-linux.zip &> /dev/null
 git clone \
     --depth=1 \
     --single-branch \
-    --branch test-kbase \
+    --branch ci \
     "$mesasrc" mesa
 
 cd mesa
@@ -82,8 +82,6 @@ ar = "$ndk/llvm-ar"
 CC_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang"
 CXX_aarch64_linux_android = "$ndk/aarch64-linux-android36-clang++"
 EOF
-
-unzip shims.zip -d ./
 
 git config user.name "PanVK-Builder"
 git config user.email "sdddxd86@gmail.com"
@@ -176,7 +174,7 @@ export BINDGEN_EXTRA_CLANG_ARGS="--target=aarch64-linux-android36 --sysroot=$sys
 
 meson setup build \
     --cross-file android-aarch64.txt \
-    -Dbuildtype=release \
+    -Dbuildtype=debug \
     -Dstrip=true \
     -Dplatforms=android \
     -Dvideo-codecs=all \
