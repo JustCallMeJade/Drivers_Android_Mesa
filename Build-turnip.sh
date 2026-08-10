@@ -43,7 +43,7 @@ PATCHES=(
 )
 
 deps="git pkg-config cmake build-essential wget2 patchelf zip"
-VERSION="26.3.0-V3.0"
+VERSION="26.3.0-V4.0"
 
 if [[ -z "${API_VER:-}" ]]; then
     echo "API_VER is not set. Select an API version:"
