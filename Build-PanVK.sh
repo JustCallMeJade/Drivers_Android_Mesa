@@ -187,7 +187,7 @@ echo "Compiling PanVK for android.."
 
 meson setup build \
     --cross-file android-aarch64.txt \
-    -Dbuildtype=debug \
+    -Dbuildtype=debugoptimized \
     -Dplatforms=android \
     -Dvideo-codecs=all \
     -Dplatform-sdk-version=36 \
@@ -209,7 +209,8 @@ meson setup build \
     -Dgles2=disabled \
     -Dllvm=disabled \
     -Dpanfrost-rust=true \
-    --prefix "$workdir/output"
+    --prefix "$workdir/output" \
+    -Dstrip=true
 
 ninja -C build -j"$(nproc --all)" install 
 
