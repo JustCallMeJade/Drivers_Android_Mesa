@@ -5,6 +5,7 @@ ndk="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 mesasrc="https://gitlab.freedesktop.org/mesa/mesa.git"
 patch="https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/refs/heads/main/Gpu-Hacks.patch"
+patch2="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/44015.patch"
 
 deps="git pkg-config cmake build-essential wget2 patchelf zip"
 VERSION="26.3.0-V5.0"
@@ -125,8 +126,10 @@ cd "$workdir/mesa"
 rm -rf build-android-aarch64
 
 wget $patch
+wget $patch2
 
 git apply Gpu-Hacks.patch
+git apply 44015.patch
 
 git add .
 
