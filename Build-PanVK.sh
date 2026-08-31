@@ -4,7 +4,7 @@ set -oe pipefail
 workdir="$(pwd)/pan_workdir"
 ndk="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
-mesasrc="https://github.com/leegao/mesa-funnymdzz.git" # Leegao's mesa
+mesasrc="https://github.com/funnymdzz/mesa.git"
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip curl"
 VERSION="26.3.0-V1.0"
 ndk_home="$ndk/.."
@@ -213,36 +213,6 @@ meson setup build \
 
 ninja -C build -j"$(nproc --all)" install 
 
-echo "Building libdrm for DT_NEEDED"
-
-git clone --depth 1 https://gitlab.freedesktop.org/mesa/libdrm
-
-cd libdrm
-
-export CFLAGS="-DANDROID -D__ANDROID__"
-
-mv ../android-aarch64.txt .
-
-meson setup build \
---cross-file android-aarch64.txt \
--Dbuildtype=debugoptimized \
---prefix "$workdir/output" \
--Dexynos=enabled \
--Damdgpu=disabled \
--Dnouveau=disabled \
--Dintel=disabled \
--Dradeon=disabled \
--Dtegra=disabled \
--Detnaviv=disabled \
--Dvc4=disabled \
--Domap=disabled \
--Dvmwgfx=disabled \
--Dstrip=true
-
-ninja -C build
-
-ninja -C build install &> /dev/null
-
 cd "$workdir/output/lib"
 
 echo "packaging PanVK"
@@ -254,17 +224,17 @@ cat <<EOF > meta.json
 {
 "schemaVersion": 1,
 "name": "Mesa PanVK v$VERSION",
-"description": "Built with Leegao's mesa. export PAN_I_WANT_A_BROKEN_DRIVER=1 if you're in winlator or termux. See supported GPUs here: [https://docs.mesa3d.org/drivers/panfrost.html].",
+"description": "Built with Funnymdzz's mesa. export PAN_I_WANT_A_BROKEN_DRIVER=1 if you're in winlator or termux. See supported GPUs here: [https://docs.mesa3d.org/drivers/panfrost.html].",
 "author": "JustCallMeJade",
 "packageVersion": "1",
-"vendor": "Mesa3D, Leegao",
+"vendor": "Mesa3D, Funnymdzz",
 "driverVersion": "Vulkan 1.4",
 "minApi": 30,
 "libraryName": "vulkan.mali.so"
 }
 EOF
 
-zip -9 PanVK-v$VERSION.zip vulkan.mali.so meta.json libdrm.so
+zip -9 PanVK-v$VERSION.zip vulkan.mali.so meta.json
 
 if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
     echo "VERSION=$VERSION" >> "$GITHUB_ENV"
