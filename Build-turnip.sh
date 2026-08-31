@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 workdir="$(pwd)/turnip_workdir"
 ndk="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
 sysroot="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
