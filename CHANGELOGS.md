@@ -21,6 +21,7 @@
 
 - **710** : **Supported**  ✓
 - **720** : **Supported**  ✓
+- **722** : **Supported**  ✓
 - **725** : **Supported**  ✓
 - **730** : **Supported**  ✓
 - **735** : **Supported**  ✓
@@ -40,8 +41,6 @@
  ## Thank you ♥
 
 - **Vauzi-17**
-- **Whitebelyash**
-- **Winnative-devs**
 
 
 
