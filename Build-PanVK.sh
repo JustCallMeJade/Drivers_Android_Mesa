@@ -1,5 +1,5 @@
 #!/bin/bash
-set -oe pipefail
+set -euo pipefail
 
 workdir="$(pwd)/pan_workdir"
 ndk="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
