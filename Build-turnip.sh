@@ -125,8 +125,8 @@ EOF
 cd "$workdir/mesa"
 rm -rf build-android-aarch64
 
-wget $patch
-wget $patch2
+wget "$patch"
+wget "$patch2"
 
 git apply Gpu-Hacks.patch
 git apply 44015.patch
