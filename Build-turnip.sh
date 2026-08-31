@@ -7,7 +7,7 @@ mesasrc="https://gitlab.freedesktop.org/mesa/mesa.git"
 patch="https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/refs/heads/main/Gpu-Hacks.patch"
 patch2="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/44015.patch"
 
-deps="git pkg-config cmake build-essential wget2 patchelf zip"
+deps="git pkg-config cmake build-essential wget wget2 patchelf zip"
 VERSION="26.3.0-V5.0"
 
 if [[ -z "${API_VER:-}" ]]; then
