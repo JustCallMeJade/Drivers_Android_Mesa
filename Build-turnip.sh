@@ -3,8 +3,8 @@
 set -euo pipefail
 
 workdir="$(pwd)/turnip_workdir"
-ndk="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/bin"
-sysroot="$workdir/r29/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+ndk="$workdir/android-ndk-r30/toolchains/llvm/prebuilt/linux-x86_64/bin"
+sysroot="$workdir/android-ndk-r30/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 mesasrc="https://gitlab.freedesktop.org/mesa/mesa.git"
 patch="https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/refs/heads/main/Gpu-Hacks.patch"
 patch2="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/44015.patch"
@@ -14,7 +14,7 @@ VERSION="26.3.0-V6.0"
 
 if [[ -z "${API_VER:-}" ]]; then
     echo "API_VER is not set. Select an API version:"
-    select ver in 27 28 29 30 31 32 33 34 35 36; do
+    select ver in 27 28 29 30 31 32 33 34 35 36 37; do
         if [[ -n "$ver" ]]; then
             API_VER="$ver"
             export API_VER
@@ -38,13 +38,13 @@ sudo apt install git pkg-config cmake patchelf build-essential wget2 zip # fallb
 mkdir -p "$workdir" && cd "$workdir"
 mkdir -p "$workdir/turnip"
 
-rm -rf "$workdir/r29"
+rm -rf "$workdir/android-ndk-r30"
 rm -rf "$workdir/mesa"
-rm -rf "$workdir/android-ndk-r29-linux-aarch64.tar.gz"
+rm -rf "$workdir/android-ndk-r30-linux.zip"
 
 cd "$workdir"
-wget2 -q -nv https://github.com/SnowNF/ndk-aarch64-linux/releases/download/0.0.2/android-ndk-r29-linux-aarch64.tar.gz
-tar -xzf android-ndk-r29-linux-aarch64.tar.gz
+wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-linux.zip
+unzip android-ndk-r30-linux.zip &> /dev/null
 
 git clone "$mesasrc" --depth=1
 cd mesa
