@@ -2,8 +2,8 @@
 set -euo pipefail
 
 workdir="$(pwd)/pan_workdir"
-ndk="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/bin"
-sysroot="$workdir/android-ndk-r30-beta2/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+ndk="$workdir/android-ndk-r30/toolchains/llvm/prebuilt/linux-x86_64/bin"
+sysroot="$workdir/android-ndk-r30/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
 mesasrc="https://github.com/funnymdzz/mesa.git"
 deps="git pkg-config cmake build-essential wget2 patchelf zip unzip curl"
 VERSION="26.3.0-V1.0"
@@ -65,8 +65,8 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 rustup target add aarch64-linux-android
 
-wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-beta2-linux.zip
-unzip android-ndk-r30-beta2-linux.zip &> /dev/null
+wget2 -q -nv https://dl.google.com/android/repository/android-ndk-r30-linux.zip
+unzip android-ndk-r30-linux.zip &> /dev/null
 
 echo "Cloning mesa."
 
