@@ -10,7 +10,7 @@ patch="https://raw.githubusercontent.com/JustCallMeJade/Drivers_Android_Mesa/ref
 patch2="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/44015.patch"
 patch3="https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/39751.patch"
 deps="git pkg-config cmake build-essential wget wget2 patchelf zip"
-VERSION="26.3.0-V5.0"
+VERSION="26.3.0-V6.0"
 
 if [[ -z "${API_VER:-}" ]]; then
     echo "API_VER is not set. Select an API version:"
@@ -24,10 +24,10 @@ if [[ -z "${API_VER:-}" ]]; then
     done
 fi
 
-echo "Only works in Debian/Ubuntu Arm64!!! press Ctrl + C to exit"
+echo "Only works in Debian/Ubuntu x86_64!!! press Ctrl + C to exit"
 echo "Installing build dependencies..."
 
-sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/debian.sources
+sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/debian.sources || sudo sed -i '/^Types:/{/deb-src/! s/$/ deb-src/;}' /etc/apt/sources.list.d/ubuntu.sources
 
 sudo apt-get update -y > /dev/null 2>&1
 sudo apt-get build-dep mesa -y -qq > /dev/null 2>&1
