@@ -11,12 +11,12 @@ permissions:
   contents: write
 
 env:
-  API_VER: 35
+  API_VER: 36
   BUILD_VARIANT: p2
 
 jobs:
   build:
-    runs-on: ubuntu-26.04-arm
+    runs-on: ubuntu-26.04
 
     container:
       image: debian:sid
