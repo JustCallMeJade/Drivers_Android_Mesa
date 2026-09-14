@@ -9,7 +9,7 @@ on:
   - "Build-turnip.sh"
   
 env:
- API_VER: 35
+ API_VER: 36
  BUILD_VARIANT: p2
  DEBIAN_FRONTEND: non-interactive
 
